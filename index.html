@@ -128,6 +128,19 @@ input.t:focus,textarea:focus,select:focus{border-color:var(--blue);outline:none}
 .empty{padding:30px;border:2px dashed var(--line);border-radius:16px;text-align:center;color:var(--soft)}
 .ov{position:fixed;inset:0;background:color-mix(in srgb,#0a1030 55%,transparent);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
 .ov[hidden]{display:none}
+#study,#exam{overflow:auto}#exam{background:var(--panel);align-items:flex-start}
+.qnav{display:flex;flex-wrap:wrap;gap:6px}
+.qn{width:38px;height:38px;border-radius:10px;border:2px solid var(--line);background:var(--card);font-weight:800;color:var(--soft)}
+.qn.done{background:color-mix(in srgb,var(--blue) 22%,var(--card));color:var(--ink)}
+.qn.on{border-color:var(--blue);color:var(--ink)}
+.opt.sel{border-color:var(--blue);background:color-mix(in srgb,var(--blue) 18%,var(--card))}
+.timer{font-weight:800;font-size:20px;font-variant-numeric:tabular-nums}.timer.low{color:var(--red)}
+.score{font-size:clamp(56px,10vw,92px);font-weight:800;line-height:1;margin-top:8px;font-variant-numeric:tabular-nums}
+.bar{height:10px;border-radius:6px;background:var(--line);overflow:hidden;display:block}.bar i{display:block;height:100%;background:var(--blue)}
+.hist,.dlg .hrow{max-width:560px}
+.hrow{display:grid;grid-template-columns:minmax(70px,auto) minmax(60px,1fr) auto auto;gap:12px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.rv{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--bg);margin-bottom:10px;border-left:6px solid #d9434a}
+.rv.ok{border-left-color:#2f9e5a}.rv.mid{border-left-color:#e48a1c}
 .dlg{background:var(--bg);border-radius:18px;padding:22px;width:min(440px,100%);box-shadow:0 20px 60px rgba(0,0,0,.35)}
 .dlg h2{margin:0 0 12px;font-size:21px}
 .sw{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
@@ -177,6 +190,7 @@ font:400 clamp(20px,3.2vw,30px)/1.35 Kalam,cursive;color:var(--ink);overflow:aut
   <main id="main"></main>
 </div>
 <div class="ov" id="study" hidden></div>
+<div class="ov" id="exam" hidden></div>
 <div class="ov" id="dlg" hidden></div>
 <input type="file" id="fileIn" hidden multiple accept=".txt,.md,.pdf,.docx,image/*">
 
@@ -231,6 +245,13 @@ en:{
  aiLang:'English',
  preparing:'Writing the answer options…',mcFail:'Couldn’t write answer options for some cards — those will show as flip cards.',onlyFlip:'Couldn’t make answer options for this card, so it’s a flip card for now.',
  mkOpts:n=>`✨ Make multiple-choice options for ${n} ${P(n,'card','cards')}`,noOpts:'No answer options yet',preparingN:(a,b)=>`Writing answer options… ${a} / ${b}`,optsDone:'All cards now have multiple-choice options ✨',
+ test:'📝 Take a test',testSetup:'New test',testN:'Number of questions',allN:n=>`All (${n})`,testTime:'Time limit',noLimit:'No limit',minN:m=>`${m} minutes`,
+ testOpen:'Add written questions marked by AI',startTest:'Start test',testNeedCards:'A test needs cards with answer options — make some cards first.',makingTest:'Preparing the test…',
+ qOf:(i,n)=>`Question ${i} of ${n}`,openQ:'written answer',writeAns:'Write your answer…',prev:'← Previous',nextQ:'Next →',submit:'Hand in',
+ submitQ:n=>n?`You still have ${n} unanswered ${P(n,'question','questions')}. Hand in anyway?`:'Hand in your test?',timeUp:'Time’s up! Your test was handed in.',
+ quitQ:'Leave the test? Your answers will be lost.',close:'Close',marking:'Marking your test…',markFail:'Couldn’t mark the written answers — they count as 0.',
+ result:'your result',pts:(a,b)=>`${a} of ${b} points`,msgHi:'Excellent work! 🌟',msgMid:'Good — a little more revision and you’ve got it.',msgLo:'Keep going — study the ones you missed and try again.',
+ byTopic:'By topic',review:'Corrections',yourAns:'Your answer',rightAns:'Right answer',noAnswer:'(no answer)',studyWrong:'Study the ones I missed',again2:'Take another test',pastTests:'Past tests',
  showAns:'👁 Show answers',hideAns:'Hide answers',reveal:'Show answer',tryHint:'Choose an answer on each card to test yourself.',
  themeLbl:'Light or dark page',lightW:'Light',darkW:'Dark',retryMC:'Try again',modeMC:'Multiple choice',modeFlip:'Flip cards',
  pickAns:'Choose the right answer (or press 1–4).',correct:'Correct! 🎉',wrongAns:'Not quite — the right answer is in green.',next:'Next →',
@@ -275,6 +296,13 @@ pt:{
  aiLang:'European Portuguese (Portugal)',
  preparing:'A preparar as opções de resposta…',mcFail:'Não foi possível fazer opções para alguns cartões — esses aparecem como cartões para virar.',onlyFlip:'Não foi possível fazer opções para este cartão, por isso por agora é para virar.',
  mkOpts:n=>`✨ Fazer opções de escolha múltipla para ${n} ${P(n,'cartão','cartões')}`,noOpts:'Ainda sem opções de resposta',preparingN:(a,b)=>`A preparar as opções de resposta… ${a} / ${b}`,optsDone:'Todos os cartões já têm opções de escolha múltipla ✨',
+ test:'📝 Fazer teste',testSetup:'Novo teste',testN:'Número de perguntas',allN:n=>`Todas (${n})`,testTime:'Tempo limite',noLimit:'Sem limite',minN:m=>`${m} minutos`,
+ testOpen:'Incluir perguntas de desenvolvimento corrigidas pela IA',startTest:'Começar teste',testNeedCards:'Para fazer um teste são precisos cartões com opções de resposta — faz cartões primeiro.',makingTest:'A preparar o teste…',
+ qOf:(i,n)=>`Pergunta ${i} de ${n}`,openQ:'resposta escrita',writeAns:'Escreve a tua resposta…',prev:'← Anterior',nextQ:'Seguinte →',submit:'Entregar',
+ submitQ:n=>n?`Ainda tens ${n} ${P(n,'pergunta','perguntas')} sem resposta. Entregar mesmo assim?`:'Entregar o teste?',timeUp:'Acabou o tempo! O teste foi entregue.',
+ quitQ:'Sair do teste? As respostas perdem-se.',close:'Fechar',marking:'A corrigir o teste…',markFail:'Não foi possível corrigir as respostas escritas — contam como 0.',
+ result:'o teu resultado',pts:(a,b)=>`${a} de ${b} pontos`,msgHi:'Excelente trabalho! 🌟',msgMid:'Bom — mais um pouco de revisão e está lá.',msgLo:'Continua — estuda as que erraste e tenta outra vez.',
+ byTopic:'Por tema',review:'Correção',yourAns:'A tua resposta',rightAns:'Resposta certa',noAnswer:'(sem resposta)',studyWrong:'Estudar as que errei',again2:'Fazer outro teste',pastTests:'Testes anteriores',
  showAns:'👁 Mostrar respostas',hideAns:'Esconder respostas',reveal:'Ver resposta',tryHint:'Escolhe uma resposta em cada cartão para te testares.',
  themeLbl:'Página clara ou escura',lightW:'Claro',darkW:'Escuro',retryMC:'Tentar outra vez',modeMC:'Escolha múltipla',modeFlip:'Virar cartões',
  pickAns:'Escolhe a resposta certa (ou carrega em 1–4).',correct:'Certo! 🎉',wrongAns:'Não é bem — a resposta certa está a verde.',next:'Seguinte →',
@@ -384,9 +412,9 @@ function ask(title,{value='',ph='',colors=false,color=COLORS[0],ok}={}){
     d.onclick=e=>{if(e.target===d)close(null)};d._close=()=>close(null);
   })
 }
-function confirmBox(text){
+function confirmBox(text,okLbl){
   return new Promise(res=>{const d=$('#dlg');
-    d.innerHTML=`<div class="dlg"><h2>${esc(T('sure'))}</h2><p>${esc(text)}</p><div class="row" style="justify-content:flex-end"><button class="btn ghost" id="dNo">${esc(T('cancel'))}</button><button class="btn danger" id="dYes">${esc(T('del'))}</button></div></div>`;
+    d.innerHTML=`<div class="dlg"><h2>${esc(T('sure'))}</h2><p>${esc(text)}</p><div class="row" style="justify-content:flex-end"><button class="btn ghost" id="dNo">${esc(T('cancel'))}</button><button class="btn ${okLbl?'pri':'danger'}" id="dYes">${esc(okLbl||T('del'))}</button></div></div>`;
     d.hidden=false;const close=v=>{d.hidden=true;d.innerHTML='';res(v)};
     $('#dNo').onclick=()=>close(false);$('#dYes').onclick=()=>close(true);d.onclick=e=>{if(e.target===d)close(false)};d._close=()=>close(false);$('#dYes').focus()})
 }
@@ -426,9 +454,11 @@ function viewSubject(s){
   <h1>${esc(s.name)}</h1>
   <div class="row" style="margin:14px 0 24px">
     ${total?`<button class="btn hi" data-act="studySubject" data-id="${s.id}">${n?T('studyDue',n):T('practiseAll')}</button>`:''}
+    ${total?`<button class="btn ghost" data-act="test" data-kind="subject" data-id="${s.id}">${T('test')}</button>`:''}
     <button class="btn pri" data-act="newFolder" data-sid="${s.id}">${T('newFolder')}</button>
     <button class="btn ghost" data-act="editSubject" data-id="${s.id}">${T('renameColour')}</button>
     <button class="btn ghost danger" data-act="delSubject" data-id="${s.id}">${T('del')}</button></div>
+  ${testHistory({type:'subject',id:s.id})}
   ${fs.length?`<div class="grid">${fs.map(f=>folderTile(f,s.color)).join('')}<button class="tile add" data-act="newFolder" data-sid="${s.id}">${T('newFolder')}</button></div>`
   :`<div class="empty"><p>${T('noFolders')}</p><button class="btn pri" data-act="newFolder" data-sid="${s.id}">${T('newFolder')}</button></div>`}`;
 }
@@ -445,9 +475,11 @@ function viewFolder(f){
   <div class="row" style="margin-top:14px">
     ${dk.cards.length?`<button class="btn hi" data-act="studyFolder" data-id="${f.id}">${n?T('studyDue',n):T('practiseN',dk.cards.length)}</button>`:''}
     ${n&&n<dk.cards.length?`<button class="btn ghost" data-act="studyFolderAll" data-id="${f.id}">${T('practiseN',dk.cards.length)}</button>`:''}
+    ${descend(f.id).some(id=>(S.decks[id]?.cards||[]).length)?`<button class="btn ghost" data-act="test" data-kind="folder" data-id="${f.id}">${T('test')}</button>`:''}
     <button class="btn ghost" data-act="newFolder" data-sid="${s.id}" data-pid="${f.id}">${T('subfolder')}</button>
     <button class="btn ghost" data-act="renameFolder" data-id="${f.id}">${T('rename')}</button>
     <button class="btn ghost danger" data-act="delFolder" data-id="${f.id}">${T('del')}</button></div>
+  ${testHistory({type:'folder',id:f.id})}
   ${subs.length?`<h3>${T('subfoldersH')}</h3><div class="grid">${subs.map(x=>folderTile(x,s.color)).join('')}</div>`:''}
   <div class="tabs" role="tablist">
     ${[['add',T('tAdd')],['cards',T('tCards',dk.cards.length)],['notes',T('tNotes',dk.notes.length)],['rev',T('tRev')]].map(([k,l])=>`<button role="tab" class="${tab===k?'on':''}" data-act="tab" data-tab="${k}">${l}</button>`).join('')}
@@ -850,6 +882,161 @@ document.addEventListener('keydown',e=>{
 });
 const itemsOf=(fids,dueOnly)=>fids.flatMap(fid=>(S.decks[fid]?.cards||[]).filter(c=>!dueOnly||(c.due||0)<=Date.now()).map(c=>({fid,cid:c.id})));
 
+/* ---------- test simulator ---------- */
+let exam=null;
+const scopeFids=sc=>sc.type==='folder'?descend(sc.id):S.lib.folders.filter(f=>f.subjectId===sc.id).map(f=>f.id);
+const scopeTitle=sc=>sc.type==='folder'?(fold(sc.id)?.name||''):(subj(sc.id)?.name||'');
+const scopeKey=sc=>sc.type[0]+':'+sc.id;
+const fmtNum=x=>x.toLocaleString(LANG==='pt'?'pt-PT':'en-GB',{maximumFractionDigits:1});
+const fmtClock=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+function testHistory(sc){
+  const list=(S.lib.tests||[]).filter(t=>t.scope===scopeKey(sc)).slice(-5).reverse();
+  if(!list.length)return '';
+  return `<h3>${T('pastTests')}</h3><div class="hist">${list.map(t=>`<div class="hrow"><span>${fmtDate(t.date)}</span><span class="bar"><i style="width:${t.pct}%"></i></span><b>${fmtNum(t.s20)} / 20</b><span class="note">${t.pct}%</span></div>`).join('')}</div>`;
+}
+function testSetup(sc){
+  const fids=scopeFids(sc);const cards=itemsOf(fids,false).length;
+  if(!cards){toast(T('testNeedCards'));return}
+  const hasNotes=fids.some(f=>(S.decks[f]?.notes||[]).length);
+  const sizes=[10,20,30].filter(x=>x<cards);const all=Math.min(cards,60);
+  const d=$('#dlg');
+  d.innerHTML=`<div class="dlg" role="dialog" aria-modal="true"><h2>${T('testSetup')}</h2><p class="note" style="margin:0">${esc(scopeTitle(sc))} · ${T('cards',cards)}</p>
+    <label class="f" for="tN">${T('testN')}</label><select id="tN">${sizes.map((x,i)=>`<option value="${x}" ${i===0?'selected':''}>${x}</option>`).join('')}<option value="${all}" ${sizes.length?'':'selected'}>${T('allN',all)}</option></select>
+    <label class="f" for="tT">${T('testTime')}</label><select id="tT"><option value="0">${T('noLimit')}</option>${[10,20,30,45].map(m=>`<option value="${m}" ${m===20?'selected':''}>${T('minN',m)}</option>`).join('')}</select>
+    ${AI&&hasNotes?`<label class="note" style="display:flex;gap:8px;align-items:center;margin-top:14px"><input type="checkbox" id="tO"> ${T('testOpen')}</label>`:''}
+    <div class="row" style="margin-top:18px;justify-content:flex-end"><button class="btn ghost" id="dNo">${T('cancel')}</button><button class="btn pri" id="dOk">${T('startTest')}</button></div></div>`;
+  d.hidden=false;const close=()=>{d.hidden=true;d.innerHTML=''};
+  $('#dNo').onclick=close;d.onclick=e=>{if(e.target===d)close()};d._close=close;
+  $('#dOk').onclick=()=>{const n=+$('#tN').value,m=+$('#tT').value,o=!!$('#tO')?.checked;close();buildTest(sc,n,m,o)};
+  $('#dOk').focus();
+}
+async function buildTest(sc,n,mins,withOpen){
+  const fids=scopeFids(sc);
+  exam={title:scopeTitle(sc),sc,n,mins,withOpen,qs:[],i:0,loading:T('makingTest'),done:false,timer:null};
+  const me=exam;renderExam();
+  let items=itemsOf(fids,false).map(it=>({it,c:findCard(it)})).filter(x=>x.c);
+  const ready=items.filter(x=>!needsWrong(x.c)).length;
+  if(ready<n&&AI){
+    const missing=shuffle(items.filter(x=>needsWrong(x.c))).slice(0,Math.min(40,n-ready+5));
+    for(let k=0;k<missing.length;k+=10){if(exam!==me)return;if(!await fetchWrong(missing.slice(k,k+10)))break}
+  }
+  if(exam!==me)return;
+  const mc=shuffle(items.filter(x=>!needsWrong(x.c))).slice(0,n);
+  let open=[];
+  if(withOpen&&AI){
+    const notes=fids.flatMap(f=>(S.decks[f]?.notes||[]).map(x=>x.text)).join('\n\n').slice(0,40000);
+    try{const r=await askJSON(`You write the written-answer part of a test for a secondary-school student, based ONLY on the notes below.
+Write ${n>=20?3:2} short-answer questions that check understanding (explain, compare, give a reason or an example), each answerable in 2–4 sentences.
+Write them in the same language as the notes. For each, give the expected answer as the key points a good answer must include.
+Return ONLY JSON: {"questions":[{"q":"...","answer":"..."}]}
+
+NOTES:
+"""
+${notes}
+"""`);
+      open=(pickArr(r,['questions','items'])||[]).filter(x=>x&&x.q).slice(0,3).map(x=>({kind:'open',q:String(x.q),key:String(x.answer||x.a||''),pick:'',pts:null,fb:''}));
+    }catch(e){if(e&&e.code==='not_granted'){AI=null;IMG=false}}
+  }
+  if(exam!==me)return;
+  if(!mc.length&&!open.length){exam=null;renderExam();toast(T('testNeedCards'));return}
+  exam.qs=mc.map(x=>{const opts=shuffle([x.c.a,...x.c.wrong.filter(Boolean).slice(0,3)]);return{kind:'mc',fid:x.it.fid,cid:x.c.id,q:x.c.q,a:x.c.a,opts,ci:opts.indexOf(x.c.a),pick:null}}).concat(open);
+  exam.loading=null;exam.end=mins?Date.now()+mins*60000:null;
+  if(exam.end)exam.timer=setInterval(()=>{if(!exam||exam.done||exam.loading)return;const left=exam.end-Date.now();
+    if(left<=0){submitExam(true);return}const el=$('#exTimer');if(el){el.textContent=fmtClock(left);el.classList.toggle('low',left<60000)}},1000);
+  renderExam();
+}
+const answered=q=>q.kind==='mc'?q.pick!==null:!!q.pick.trim();
+function renderExam(){
+  const o=$('#exam');if(!exam){o.hidden=true;o.innerHTML='';return}
+  o.hidden=false;
+  if(exam.loading){o.innerHTML=`<div class="st"><div class="busy" role="status" style="justify-content:center;padding:28px"><span class="spin"></span>${esc(exam.loading)}</div></div>`;return}
+  if(exam.done)return renderResults(o);
+  const q=exam.qs[exam.i],N=exam.qs.length,last=exam.i===N-1;
+  const fmt=s=>esc(s).replace(/\n/g,'<br>');
+  o.innerHTML=`<div class="st">
+   <div class="row" style="justify-content:space-between"><b>📝 ${esc(exam.title)}</b>
+     ${exam.end?`<span class="timer" id="exTimer">${fmtClock(exam.end-Date.now())}</span>`:''}
+     <div class="row"><button class="btn pri" data-xact="submit">${T('submit')}</button><button class="btn ghost" data-xact="quit" aria-label="${esc(T('close'))}">✕</button></div></div>
+   <div class="qnav">${exam.qs.map((x,i)=>`<button class="qn ${answered(x)?'done':''} ${i===exam.i?'on':''}" data-xact="go" data-i="${i}" aria-label="${esc(T('qOf',i+1,N))}">${i+1}</button>`).join('')}</div>
+   <p class="note" style="margin:0">${T('qOf',exam.i+1,N)}${q.kind==='open'?' · '+T('openQ'):''}</p>
+   <div class="face solo"><span class="lab">${T('question')}</span>${fmt(q.q)}</div>
+   ${q.kind==='mc'?`<div class="opts">${q.opts.map((x,i)=>`<button class="opt ${q.pick===i?'sel':''}" data-xact="pick" data-i="${i}"><span class="k">${'ABCD'[i]}</span><span>${fmt(x)}</span></button>`).join('')}</div>`
+     :`<textarea id="exOpen" placeholder="${esc(T('writeAns'))}" style="min-height:160px">${esc(q.pick)}</textarea>`}
+   <div class="row" style="justify-content:space-between"><button class="btn ghost" data-xact="prev" ${exam.i===0?'disabled':''}>${T('prev')}</button>
+     ${last?`<button class="btn pri" data-xact="submit">${T('submit')}</button>`:`<button class="btn pri" data-xact="next">${T('nextQ')}</button>`}</div></div>`;
+  const ta=$('#exOpen');if(ta)ta.oninput=()=>{q.pick=ta.value;const b=o.querySelectorAll('.qn')[exam.i];if(b)b.classList.toggle('done',!!ta.value.trim())};
+}
+async function submitExam(auto){
+  if(!exam||exam.done||exam.loading)return;
+  const me=exam;
+  if(!auto){const left=exam.qs.filter(q=>!answered(q)).length;if(!await confirmBox(T('submitQ',left),T('submit')))return;if(exam!==me)return}
+  clearInterval(exam.timer);
+  if(auto)toast(T('timeUp'));
+  exam.loading=T('marking');renderExam();
+  const now=Date.now();let got=0,max=0;
+  for(const q of exam.qs.filter(q=>q.kind==='mc')){max+=1;const ok=q.pick===q.ci;q.ok=ok;if(ok)got+=1;
+    const c=findCard({fid:q.fid,cid:q.cid});if(c){if(ok){c.box=Math.min(6,(c.box||0)+1);c.due=now+INT[c.box]*DAY}else{c.box=0;c.due=now}mark(q.fid)}}
+  const open=exam.qs.filter(q=>q.kind==='open');
+  if(open.length){
+    max+=2*open.length;
+    const toMark=open.filter(q=>q.pick.trim());open.forEach(q=>{q.pts=0});
+    if(toMark.length&&AI){
+      try{const r=await askJSON(`You are a fair, encouraging teacher marking the written part of a secondary-school test.
+Mark each answer from 0 to 2 points (0, 0.5, 1, 1.5 or 2) against the expected key points. Spelling doesn't matter; understanding does.
+For each, write 1–2 sentences of feedback in the same language as the question: what was right and what was missing.
+Return ONLY JSON: {"results":[{"n":1,"points":1.5,"feedback":"..."}]}
+
+ANSWERS:
+${toMark.map((q,i)=>`${i+1}. Question: ${q.q}\n   Expected key points: ${q.key}\n   Student's answer: ${q.pick}`).join('\n')}`);
+        (pickArr(r,['results','items','answers'])||[]).forEach((x,i)=>{const k=Number(x&&x.n);const q=toMark[(k>=1&&k<=toMark.length)?k-1:i];if(!q)return;
+          const p=Math.max(0,Math.min(2,Math.round(Number(x.points??x.score??0)*2)/2));q.pts=isNaN(p)?0:p;q.fb=String(x.feedback||'')});
+      }catch(e){toast(T('markFail'))}
+    }
+    open.forEach(q=>{got+=q.pts||0});
+  }
+  if(exam!==me)return;
+  const s20=max?Math.round(got/max*200)/10:0,pct=max?Math.round(got/max*100):0;
+  const topics={};for(const q of exam.qs.filter(q=>q.kind==='mc')){const t=topics[q.fid]||(topics[q.fid]={r:0,n:0});t.n++;if(q.ok)t.r++}
+  exam.res={got,max,s20,pct,topics};
+  S.lib.tests=(S.lib.tests||[]).concat({id:nid(),scope:scopeKey(exam.sc),date:now,s20,pct,n:exam.qs.length}).slice(-100);mark('lib');
+  exam.loading=null;exam.done=true;renderExam();render();
+}
+function renderResults(o){
+  const r=exam.res,fmt=s=>esc(s).replace(/\n/g,'<br>');
+  const msg=r.pct>=85?T('msgHi'):r.pct>=50?T('msgMid'):T('msgLo');
+  const tk=Object.entries(r.topics).map(([fid,t])=>({name:fold(fid)?.name||'—',p:Math.round(t.r/t.n*100),t})).sort((a,b)=>a.p-b.p);
+  const wrong=exam.qs.filter(q=>q.kind==='mc'&&!q.ok);
+  o.innerHTML=`<div class="st">
+   <div class="dlg" style="width:100%;text-align:center"><p class="note" style="margin:0">📝 ${esc(exam.title)} · ${T('result')}</p>
+     <div class="score">${fmtNum(r.s20)}<small style="font-size:.35em;color:var(--soft)"> / 20</small></div>
+     <p style="margin:6px 0 0;font-weight:800">${r.pct}% · ${T('pts',fmtNum(r.got),r.max)}</p><p class="lead" style="margin:8px auto 0">${msg}</p>
+     <div class="row" style="justify-content:center;margin-top:16px">${wrong.length?`<button class="btn hi" data-xact="studyWrong">${T('studyWrong')}</button>`:''}<button class="btn ghost" data-xact="again">${T('again2')}</button><button class="btn pri" data-xact="quit">${T('close')}</button></div></div>
+   ${tk.length>1?`<div class="dlg" style="width:100%"><h2>${T('byTopic')}</h2>${tk.map(x=>`<div class="hrow"><span>${esc(x.name)}</span><span class="bar"><i style="width:${x.p}%;background:${x.p>=70?'#2f9e5a':x.p>=50?'#e48a1c':'#d9434a'}"></i></span><b>${x.t.r}/${x.t.n}</b></div>`).join('')}</div>`:''}
+   <div class="dlg" style="width:100%"><h2>${T('review')}</h2>
+   ${exam.qs.map((q,i)=>{const ok=q.kind==='mc'?q.ok:(q.pts||0)>=1.5;const part=q.kind==='open'&&(q.pts||0)>0&&(q.pts||0)<1.5;
+     return `<div class="rv ${ok?'ok':part?'mid':'bad'}"><p style="margin:0 0 6px"><b>${i+1}. ${fmt(q.q)}</b></p>
+     ${q.kind==='mc'?`<p class="note" style="margin:0">${T('yourAns')}: <b style="color:${ok?'#2f9e5a':'#d9434a'}">${q.pick===null?T('noAnswer'):fmt(q.opts[q.pick])}</b></p>${ok?'':`<p class="note" style="margin:2px 0 0">${T('rightAns')}: <b style="color:#2f9e5a">${fmt(q.a)}</b></p>`}`
+      :`<p class="note" style="margin:0">${T('yourAns')}: ${q.pick.trim()?fmt(q.pick):T('noAnswer')}</p><p style="margin:6px 0 0"><b>${T('pts',fmtNum(q.pts||0),2)}</b>${q.fb?` — ${fmt(q.fb)}`:''}</p>${q.key?`<p class="note" style="margin:4px 0 0">${T('rightAns')}: ${fmt(q.key)}</p>`:''}`}</div>`}).join('')}</div></div>`;
+}
+$('#exam').onclick=async e=>{const b=e.target.closest('[data-xact]');if(!b||!exam)return;const a=b.dataset.xact;
+  if(a==='pick'){exam.qs[exam.i].pick=+b.dataset.i;renderExam()}
+  else if(a==='go'){exam.i=+b.dataset.i;renderExam()}
+  else if(a==='next'){exam.i=Math.min(exam.qs.length-1,exam.i+1);renderExam()}
+  else if(a==='prev'){exam.i=Math.max(0,exam.i-1);renderExam()}
+  else if(a==='submit')submitExam(false);
+  else if(a==='quit'){if(!exam.done&&!exam.loading&&exam.qs.some(answered)&&!await confirmBox(T('quitQ'),T('close')))return;clearInterval(exam.timer);exam=null;renderExam();render()}
+  else if(a==='studyWrong'){const items=exam.qs.filter(q=>q.kind==='mc'&&!q.ok).map(q=>({fid:q.fid,cid:q.cid}));const t=exam.title;exam=null;renderExam();startStudy(items,t)}
+  else if(a==='again'){const sc=exam.sc;exam=null;renderExam();testSetup(sc)}
+};
+document.addEventListener('keydown',e=>{
+  if(!exam||exam.done||exam.loading||!$('#dlg').hidden)return;
+  if(e.target&&e.target.tagName==='TEXTAREA')return;
+  const q=exam.qs[exam.i];
+  if(q.kind==='mc'&&['1','2','3','4'].includes(e.key)&&+e.key<=q.opts.length){q.pick=+e.key-1;renderExam()}
+  else if(e.key==='ArrowRight'){exam.i=Math.min(exam.qs.length-1,exam.i+1);renderExam()}
+  else if(e.key==='ArrowLeft'){exam.i=Math.max(0,exam.i-1);renderExam()}
+});
+
 /* ---------- actions ---------- */
 $('#main').addEventListener('input',e=>{const k=e.target.dataset.draft;if(!k)return;const fid=S.view.id;(S.draft[fid]||(S.draft[fid]={title:'',text:''}))[k]=e.target.value});
 $('#fileIn').onchange=e=>{handleFiles([...e.target.files]);e.target.value=''};
@@ -906,6 +1093,7 @@ async function act(a,ds){
   case'studyFolder':{const ids=[ds.id];const due=itemsOf(ids,true);startStudy(due.length?due:itemsOf(ids,false),fold(ds.id).name);break}
   case'studyFolderAll':startStudy(itemsOf([ds.id],false),fold(ds.id).name);break;
   case'studySubject':{const ids=S.lib.folders.filter(f=>f.subjectId===ds.id).map(f=>f.id);const due=itemsOf(ids,true);startStudy(due.length?due:itemsOf(ids,false),subj(ds.id).name);break}
+  case'test':testSetup({type:ds.kind,id:ds.id});break;
   case'studyAllDue':startStudy(itemsOf(S.lib.folders.map(f=>f.id),true),null);break;
   case'example':{const s={id:nid(),name:T('exSubj'),color:COLORS[2]};const f={id:nid(),subjectId:s.id,parentId:null,name:T('exFolder')};
     S.lib.subjects.push(s);S.lib.folders.push(f);S.decks[f.id]={cards:[],notes:[]};mark('lib');S.open[s.id]=true;
@@ -918,7 +1106,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(
 /* ---------- start ---------- */
 async function load(){
   status(T('opening'));S.loadFail=false;
-  try{const r=await backend.load();S.lib=r.lib&&Array.isArray(r.lib.subjects)?{subjects:r.lib.subjects,folders:r.lib.folders||[]}:{subjects:[],folders:[]};S.decks=r.decks||{};
+  try{const r=await backend.load();S.lib=r.lib&&Array.isArray(r.lib.subjects)?{subjects:r.lib.subjects,folders:r.lib.folders||[],tests:r.lib.tests||[]}:{subjects:[],folders:[]};S.decks=r.decks||{};
     for(const k in S.decks){const d=S.decks[k];d.cards=d.cards||[];d.notes=d.notes||[]}
     status(backend.name==='db'?T('savedAcc'):T('savedLocal'))}
   catch(e){S.loadFail=true;status(T('cantReach'))}

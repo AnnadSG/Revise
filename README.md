@@ -12,6 +12,7 @@ Funciona em português e inglês, com modo claro e escuro.
 - **Virar cartões** — modo alternativo: pensa na resposta, vira o cartão e avalia (Outra vez / Difícil / Bem / Fácil).
 - **Repetição espaçada** — os cartões que o aluno sabe voltam mais tarde; os que erra voltam mais cedo.
 - **Ficha de revisão** — um resumo dos apontamentos para a última revisão.
+- **Simulador de teste** — teste de uma pasta ou disciplina, com número de perguntas e tempo limite à escolha; nota de 0 a 20, resultado por tema, correção de cada pergunta e histórico dos testes. Dentro do Claude, pode incluir perguntas de desenvolvimento escritas e corrigidas pela IA.
 
 ## Como usar
 
