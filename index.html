@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Revise — Flashcards</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: friendly, focused study desk for teenagers — clear, not childish.
+   IDEA: a pack of ruled index cards and a highlighter on a school desk.
+   PICTURE: a fanned stack of index cards on home; the flip card itself in study mode.
+   COLOUR and TYPE: white paper, ballpoint blue ink, highlighter yellow accent, margin red; Nunito UI, Kalam handwriting on cards.
+   LAYOUT: subject/folder tree on the left, working area on the right; stacks on phones. */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#0d1330);--panel:light-dark(#f3f5fd,#141c40);--ink:light-dark(#141d45,#e8ebff);--soft:light-dark(#5a6390,#a3abd6);
+--line:light-dark(#dfe3f3,#283265);--blue:light-dark(#2347c9,#8ea6ff);--hi:#ffe14d;--hiInk:#2a2300;--red:light-dark(#e0464b,#ff7b80);
+--card:light-dark(#ffffff,#1b2450);--rule:light-dark(#d6e0fb,#2a3670);--shadow:light-dark(rgba(20,29,69,.12),rgba(0,0,0,.45));--onBlue:light-dark(#fff,#0d1330);--okc:light-dark(#1f7a43,#6fd99a)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+html:root[data-mode=light]{color-scheme:light !important;--bg:#ffffff;--panel:#f3f5fd;--ink:#141d45;--soft:#5a6390;--line:#dfe3f3;--blue:#2347c9;--red:#e0464b;--card:#ffffff;--rule:#d6e0fb;--shadow:rgba(20,29,69,.12);--onBlue:#ffffff;--okc:#1f7a43}
+html:root[data-mode=dark]{color-scheme:dark !important;--bg:#0d1330;--panel:#141c40;--ink:#e8ebff;--soft:#a3abd6;--line:#283265;--blue:#8ea6ff;--red:#ff7b80;--card:#1b2450;--rule:#2a3670;--shadow:rgba(0,0,0,.45);--onBlue:#0d1330;--okc:#6fd99a}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Nunito,system-ui,sans-serif;overflow-x:clip}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.top{display:flex;align-items:center;gap:12px;padding:10px max(3vw,14px);border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5}
+.logo{font-weight:800;font-size:21px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+.logo i{width:26px;height:20px;border-radius:4px;background:var(--hi);display:inline-block;transform:rotate(-6deg);box-shadow:4px 3px 0 var(--blue)}
+#status{margin-left:auto;color:var(--soft);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lang{display:flex;border:2px solid var(--line);border-radius:12px;overflow:hidden;flex:none}
+.lang button{border:0;background:none;padding:6px 12px;font-weight:800;min-height:40px;color:var(--soft)}
+.lang button.on{background:var(--blue);color:var(--onBlue)}
+
+#menuBtn{display:none}
+.app{display:grid;grid-template-columns:270px minmax(0,1fr);min-height:calc(100vh - 62px)}
+aside{border-right:1px solid var(--line);background:var(--panel);padding:16px 12px;display:flex;flex-direction:column;gap:4px}
+aside h2{font-size:13px;color:var(--soft);margin:6px 8px 4px;font-weight:700}
+.nav{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:10px;min-height:40px}
+.nav:hover{background:color-mix(in srgb,var(--blue) 9%,transparent)}
+.nav.on{background:var(--card);box-shadow:0 1px 3px var(--shadow);font-weight:700}
+.nav .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dot{width:12px;height:12px;border-radius:50%;flex:none}
+.due{font-size:12px;font-weight:800;background:var(--hi);color:var(--hiInk);border-radius:20px;padding:1px 8px;white-space:nowrap}
+main{padding:clamp(18px,3vw,40px);max-width:1100px;width:100%}
+h1{font-size:clamp(28px,4vw,44px);line-height:1.08;margin:0 0 10px;text-wrap:balance;letter-spacing:-.02em}
+h3{margin:18px 0 6px;font-size:19px}
+.lead{color:var(--soft);font-size:17px;max-width:60ch;margin:0 0 18px}
+.btn{border:2px solid var(--ink);background:var(--bg);border-radius:12px;padding:9px 16px;min-height:44px;font-weight:700;display:inline-flex;align-items:center;gap:8px}
+.btn.pri{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.pri{color:var(--onBlue)}
+.btn.hi{background:var(--hi);border-color:var(--hi);color:var(--hiInk)}
+.btn.ghost{border-color:var(--line)}
+.btn.danger{border-color:var(--red);color:var(--red)}
+.btn:disabled{opacity:.5;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.crumb{color:var(--soft);font-size:15px;margin-bottom:6px;display:flex;flex-wrap:wrap;gap:6px}
+.crumb button{border:0;background:none;padding:0;color:var(--blue);font-weight:700;min-height:28px}
+.hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:30px;align-items:center;margin-bottom:30px}
+.stack{position:relative;height:300px}
+.ic{position:absolute;width:min(78%,330px);aspect-ratio:5/3;left:10%;top:16%;background:var(--card);border-radius:10px;box-shadow:0 12px 30px var(--shadow);
+background-image:linear-gradient(var(--red),var(--red)),repeating-linear-gradient(transparent 0 27px,var(--rule) 27px 28px);background-size:100% 2px,100% 100%;background-position:0 38px,0 46px;background-repeat:no-repeat,repeat-y;
+font:700 22px/1.3 Kalam,cursive;padding:8px 20px;color:var(--blue);display:flex;flex-direction:column}
+.ic:nth-child(1){transform:rotate(-9deg) translate(-8%,4%)}
+.ic:nth-child(2){transform:rotate(4deg) translate(10%,-6%)}
+.ic:nth-child(3){transform:rotate(-1deg) translate(2%,14%)}
+.ic small{font:600 14px Nunito,sans-serif;color:var(--soft);margin-bottom:12px}
+.ic mark{background:var(--hi);color:var(--hiInk);padding:0 4px;border-radius:3px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.tile{border:1px solid var(--line);background:var(--card);border-radius:14px;padding:16px;text-align:left;display:flex;flex-direction:column;gap:6px;min-height:118px;box-shadow:0 1px 2px var(--shadow);border-top:6px solid var(--c,var(--blue))}
+.tile:hover{box-shadow:0 6px 18px var(--shadow)}
+.tile b{font-size:18px}
+.tile span{color:var(--soft);font-size:14px}
+.tile.add{border:2px dashed var(--line);box-shadow:none;align-items:center;justify-content:center;color:var(--soft);font-weight:700}
+.band{height:10px;border-radius:6px;background:var(--c);width:80px;margin-bottom:12px}
+.tabs{display:flex;gap:4px;border-bottom:2px solid var(--line);margin:22px 0 18px;overflow-x:auto}
+.tabs{scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:none;border:0;background:none;padding:10px 14px;font-weight:700;color:var(--soft);border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;min-height:44px}
+@media(max-width:600px){.lang .w{display:none}}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:12px;align-items:center;text-align:left;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:14px;padding:12px 16px;min-height:58px;font-weight:600;font-size:17px;width:100%}
+.opt .k{flex:none;width:30px;height:30px;border-radius:8px;background:var(--panel);display:grid;place-items:center;font-weight:800;font-size:14px}
+.opt:hover:not(:disabled){border-color:var(--blue)}
+.opt:disabled{cursor:default}
+.opt.ok{border-color:#2f9e5a;background:color-mix(in srgb,#2f9e5a 16%,var(--card))}
+.opt.bad{border-color:#d9434a;background:color-mix(in srgb,#d9434a 16%,var(--card))}
+.opt.dim{opacity:.55}
+.fb{font-weight:800;text-align:center;margin:0}
+.face.solo{position:relative;inset:auto;min-height:clamp(170px,28vh,280px)}
+.mode{display:flex;border:2px solid var(--line);border-radius:12px;overflow:hidden}
+.mode button{border:0;background:none;padding:6px 12px;font-weight:700;min-height:40px;color:var(--soft)}
+.mode button.on{background:var(--ink);color:var(--bg)}
+.tabs button.on{color:var(--ink);border-color:var(--blue)}
+label.f{display:block;font-weight:700;font-size:14px;margin:12px 0 6px}
+input.t,textarea,select{width:100%;border:2px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg);font-size:16px}
+select{width:auto}
+textarea{min-height:220px;resize:vertical;line-height:1.5}
+input.t:focus,textarea:focus,select:focus{border-color:var(--blue);outline:none}
+.drop{border:2px dashed var(--line);border-radius:14px;padding:16px;text-align:center;color:var(--soft);margin:12px 0}
+.drop.over{border-color:var(--blue);background:color-mix(in srgb,var(--blue) 7%,transparent)}
+.note{font-size:14px;color:var(--soft)}
+.busy{display:flex;gap:10px;align-items:center;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--hi) 35%,transparent);margin-top:12px;font-weight:700}
+.spin{width:18px;height:18px;border-radius:50%;border:3px solid currentColor;border-right-color:transparent;animation:sp 0.8s linear infinite;flex:none}
+@keyframes sp{to{transform:rotate(1turn)}}
+.cards{display:flex;flex-direction:column;gap:10px}
+.cr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:14px;align-items:start;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--card)}
+.cr .q{font-weight:700}
+.cr .a span{display:block;line-height:1.4;margin-bottom:4px}
+.cr .okA{color:var(--okc);font-weight:700}
+.cr .badA{color:var(--soft)}
+.cr .noA{color:var(--soft);font-size:13px;font-style:italic}
+.copt{display:flex;gap:8px;width:100%;text-align:left;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:8px 10px;margin-bottom:6px;font-size:15px;line-height:1.35;min-height:40px}
+.copt b{color:var(--soft);flex:none}
+.copt:hover:not(:disabled){border-color:var(--blue)}.copt:disabled{cursor:default}
+.copt.ok{border-color:#2f9e5a;background:color-mix(in srgb,#2f9e5a 16%,var(--bg))}
+.copt.bad{border-color:#d9434a;background:color-mix(in srgb,#d9434a 16%,var(--bg))}
+.cfb{font-weight:800;font-size:14px;margin:2px 0 0}
+.cr .ops{display:flex;gap:4px;align-items:center}
+.ib{border:0;background:none;border-radius:8px;min-width:38px;min-height:38px;color:var(--soft);font-weight:700}
+.ib:hover{background:var(--panel);color:var(--ink)}
+.lvl{display:flex;gap:2px;margin-top:6px}.lvl i{width:12px;height:5px;border-radius:3px;background:var(--line)}.lvl i.on{background:var(--blue)}
+.nt{border:1px solid var(--line);border-radius:12px;background:var(--card);margin-bottom:10px}
+.nt summary{padding:12px 14px;cursor:pointer;font-weight:700;display:flex;gap:10px;flex-wrap:wrap}
+.nt summary span{color:var(--soft);font-weight:400;font-size:14px}
+.nt .body{padding:0 14px 14px;white-space:pre-wrap;max-height:380px;overflow:auto;font-size:15px}
+.rev{border-radius:14px;padding:18px 22px;background:var(--card);border:1px solid var(--line);margin-bottom:14px;border-left:8px solid var(--hi)}
+.rev h3:first-child{margin-top:0}.rev ul{padding-left:20px;margin:6px 0}.rev b{background:color-mix(in srgb,var(--hi) 55%,transparent);padding:0 3px;border-radius:3px}
+.empty{padding:30px;border:2px dashed var(--line);border-radius:16px;text-align:center;color:var(--soft)}
+.ov{position:fixed;inset:0;background:color-mix(in srgb,#0a1030 55%,transparent);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+.ov[hidden]{display:none}
+.dlg{background:var(--bg);border-radius:18px;padding:22px;width:min(440px,100%);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.dlg h2{margin:0 0 12px;font-size:21px}
+.sw{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.sw button{width:34px;height:34px;border-radius:50%;border:3px solid transparent}
+.sw button.on{border-color:var(--ink)}
+#study{background:var(--panel);align-items:stretch}
+.st{width:min(760px,100%);margin:auto;display:flex;flex-direction:column;gap:16px;padding:8px}
+.prog{height:8px;border-radius:5px;background:var(--line);overflow:hidden}.prog i{display:block;height:100%;background:var(--blue);transition:width .3s}
+.flip{perspective:1400px;cursor:pointer;border:0;background:none;padding:0;width:100%}
+.flin{position:relative;width:100%;min-height:clamp(260px,46vh,420px);transition:transform .5s;transform-style:preserve-3d}
+.flip.on .flin{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;border-radius:16px;background:var(--card);box-shadow:0 14px 40px var(--shadow);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:56px 28px 28px;text-align:center;
+background-image:linear-gradient(var(--red),var(--red)),repeating-linear-gradient(transparent 0 33px,var(--rule) 33px 34px);background-size:100% 2px,100% 100%;background-position:0 44px,0 50px;background-repeat:no-repeat,repeat-y;
+font:400 clamp(20px,3.2vw,30px)/1.35 Kalam,cursive;color:var(--ink);overflow:auto}
+.face .lab{position:absolute;top:12px;left:18px;font:700 13px Nunito,sans-serif;color:var(--soft)}
+.face.back{transform:rotateY(180deg);color:var(--blue)}
+.rate{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.rate button{border:0;border-radius:12px;padding:10px 6px;font-weight:800;min-height:54px;color:#fff}
+.rate small{display:block;font-weight:600;opacity:.85;font-size:12px}
+.r1{background:#d9434a}.r2{background:#e48a1c}.r3{background:#2f9e5a}.r4{background:#2347c9}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:12px;font-weight:700;z-index:30;max-width:90vw}
+@media(max-width:760px){
+ .app{grid-template-columns:minmax(0,1fr)}
+ #menuBtn{display:inline-flex}
+ aside{position:fixed;inset:62px 0 0 0;z-index:10;display:none;overflow:auto}
+ aside.open{display:flex}
+ .hero{grid-template-columns:minmax(0,1fr)}
+ .stack{height:230px}
+ .cr{grid-template-columns:minmax(0,1fr)}
+ .cr .ops{justify-content:flex-end}
+}
+@media(max-width:520px){.logo span{display:none}#status{font-size:12px}}
+@media(max-width:480px){.rate small{display:none}}
+@media(prefers-reduced-motion:reduce){.flin,.prog i{transition:none}.spin{animation:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <button class="btn ghost" id="menuBtn">☰</button>
+  <div class="logo"><i></i><span>Revise</span></div>
+  <span id="status"></span>
+  <div class="lang" role="group" id="themeSw"><button data-mode="light">☀<span class="w"> </span></button><button data-mode="dark">☾<span class="w"> </span></button></div>
+  <div class="lang" role="group" aria-label="Language / Idioma"><button data-lang="en">EN</button><button data-lang="pt">PT</button></div>
+</header>
+<div class="app">
+  <aside id="side"></aside>
+  <main id="main"></main>
+</div>
+<div class="ov" id="study" hidden></div>
+<div class="ov" id="dlg" hidden></div>
+<input type="file" id="fileIn" hidden multiple accept=".txt,.md,.pdf,.docx,image/*">
+
+<script>
+{
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4);
+const DAY=864e5, INT=[0,1,2,4,8,16,32];
+const COLORS=['#2347c9','#e0464b','#2f9e5a','#e48a1c','#8a4fd8','#0f9bb0','#d6457f','#6b7280'];
+const use=n=>(window.claude&&typeof window.claude.use==='function')?window.claude.use(n).catch(()=>null):Promise.resolve(null);
+
+/* ---------- languages ---------- */
+const P=(n,one,many)=>n===1?one:many;
+const L={
+en:{
+ opening:'Opening your library…',saving:'Saving…',savedAcc:'All changes saved',savedLocal:'Saved in this browser only',saveFull:'Storage is full',saveFail:'Couldn’t save — check your connection',
+ folderFull:'This folder is full — split your notes into another folder.',
+ subjects:'Subjects',home:'🏠 Home',newSubject:'＋ New subject',sideAcc:'Your cards are saved privately to your account.',sideLocal:'Saved in this browser only.',
+ dueToday:n=>`${n} ${P(n,'card','cards')} to revise today`,caughtUp:'You’re all caught up',heroNew:'Turn your notes into flashcards',
+ leadHas:'Pick a subject to keep going, or add new notes to a folder and let Revise make the cards.',
+ leadNew:'Make a subject, add folders for each topic, then type or upload your notes. Revise reads them and builds flashcards and a revision sheet you can study with spaced repetition.',
+ studyAllDue:'Study all due cards',tryEx:'Try an example',noAI:'AI card-making isn’t available in this view, so Revise will make cards from lines like “Term: definition”.',
+ ic:[['History · Q','Why did the Roman Empire split in 395?'],['Chemistry · Q','What is a <mark>covalent bond</mark>?'],['Biology · A','Mitochondria release energy through respiration.']],
+ yourSubjects:'Your subjects',folders:n=>`${n} ${P(n,'folder','folders')}`,cards:n=>`${n} ${P(n,'card','cards')}`,subfolders:n=>`${n} ${P(n,'subfolder','subfolders')}`,due:n=>`${n} due`,
+ studyDue:n=>`Study ${n} due`,practiseAll:'Practise all',practiseN:n=>`Practise all ${n}`,newFolder:'＋ New folder',subfolder:'＋ Subfolder',renameColour:'Rename / colour',rename:'Rename',del:'Delete',
+ noFolders:'No folders yet. Make one for each topic, like “Cells” or “World War I”.',subfoldersH:'Subfolders',
+ tAdd:'Add notes',tCards:n=>`Cards (${n})`,tNotes:n=>`Notes (${n})`,tRev:'Revision sheet',
+ titleOpt:'Title (optional)',titlePh:'e.g. Chapter 3 — Photosynthesis',yourNotes:'Your notes',notesPh:'Type or paste your notes here…',
+ dropA:'Drop files here or',choose:'choose files',dropB:img=>`Text, Markdown, PDF or Word (.docx)${img?', or photos of handwritten notes':''}. The text appears above so you can check it.`,
+ nCards:'Number of cards',auto:'Let Revise decide',alsoRev:'Also write a revision sheet',make:'✨ Make flashcards',justSave:'Just save the notes',
+ noAIrule:'Without AI, Revise makes cards from lines written as “Term: definition” or “Term – definition”.',
+ search:'Search cards',addCard:'＋ Add card',noCards:'No cards yet. Add your notes and Revise will make them.',question:'Question',answer:'Answer',cancel:'Cancel',saveCard:'Save card',
+ known:'How well you know it',edit:'Edit card',delCard:'Delete card',noMatch:'No cards match.',
+ noNotes:'No notes saved here yet.',untitled:'Untitled notes',nCardsS:n=>`${n} ${P(n,'card','cards')}`,more:'✨ Make more cards',writeRev:'Write revision sheet',delNotes:'Delete notes',
+ revEmptyAI:'Revision sheets appear here when you make flashcards with “Also write a revision sheet” ticked, or from the Notes tab.',revEmptyNo:'Revision sheets need AI, which isn’t available in this view.',
+ reading:f=>`Reading ${f}…`,photoNoAI:'Reading photos needs AI, which isn’t available here.',noText:f=>`Couldn’t find any text in ${f}.`,readFail:f=>`Couldn’t read ${f}. Try copying the text in instead.`,
+ rate:'Too many requests — wait a minute and try again.',aiOff:'AI isn’t available — making cards from “Term: definition” lines instead.',aiFail:'Something went wrong making cards. Please try again.',
+ writing:'Reading your notes and writing cards…',writingRev:'Writing the revision sheet…',noneBack:'No cards came back — try adding more detail to the notes.',
+ noRule:'No “Term: definition” lines found. Write notes like “Osmosis: movement of water…”.',made:n=>`Made ${n} ${P(n,'card','cards')} ✨`,defNote:'Notes',
+ nothing:'No cards to study here yet.',nice:'Nice work! 🎉',went:(n,t)=>`You went through ${n} ${P(n,'card','cards')} in ${t}.`,tally:t=>`${t.easy} easy · ${t.good} good · ${t.hard} hard · ${t.again} to practise again`,
+ done:'Done',stop:'✕ Stop',flip:'Flip card',think:'Think of the answer, then tap the card (or press Space) to check.',
+ again:'Again',hard:'Hard',good:'Good',easy:'Easy',now:'now',days:d=>`${d} ${P(d,'day','days')}`,allSubj:'all subjects',
+ nsTitle:'New subject',nsPh:'e.g. Biology',create:'Create',save:'Save',editSubj:'Edit subject',colour:'Colour',sure:'Are you sure?',
+ delSubjQ:s=>`Delete “${s}” and all its folders and cards?`,nfTitle:'New folder',nsfTitle:'New subfolder',nfPh:'e.g. Cells',renameF:'Rename folder',
+ delFolderQ:(f,sub)=>`Delete “${f}”${sub?' and its subfolders':''} with all cards and notes?`,needNotes:'Type, paste or upload some notes first.',notesSaved:'Notes saved',
+ delNotesQ:n=>`Delete these notes${n?` and the ${n} ${P(n,'card','cards')} made from them`:''}?`,needQA:'A card needs a question and an answer.',
+ exAdded:'Example notes added — press “Make flashcards”.',cantReach:'Can’t reach your cards',cantReachP:'Your saved cards can’t be reached right now. Check your connection, then try again.',retry:'Try again',
+ menu:'Show subjects',
+ exSubj:'Biology (example)',exFolder:'Cells',exTitle:'Cell structure',
+ exText:`Cell structure\n\nCell: the smallest unit of life.\nNucleus: controls the cell and contains DNA.\nCell membrane: controls what enters and leaves the cell.\nCytoplasm: jelly-like fluid where most chemical reactions happen.\nMitochondria: release energy from glucose by aerobic respiration.\nRibosomes: where proteins are made.\nCell wall: made of cellulose; strengthens plant cells.\nChloroplasts: absorb light for photosynthesis (plant cells only).\n\nAnimal cells have no cell wall, no chloroplasts and no permanent vacuole.`,
+ aiLang:'English',
+ preparing:'Writing the answer options…',mcFail:'Couldn’t write answer options for some cards — those will show as flip cards.',onlyFlip:'Couldn’t make answer options for this card, so it’s a flip card for now.',
+ mkOpts:n=>`✨ Make multiple-choice options for ${n} ${P(n,'card','cards')}`,noOpts:'No answer options yet',preparingN:(a,b)=>`Writing answer options… ${a} / ${b}`,optsDone:'All cards now have multiple-choice options ✨',
+ showAns:'👁 Show answers',hideAns:'Hide answers',reveal:'Show answer',tryHint:'Choose an answer on each card to test yourself.',
+ themeLbl:'Light or dark page',lightW:'Light',darkW:'Dark',retryMC:'Try again',modeMC:'Multiple choice',modeFlip:'Flip cards',
+ pickAns:'Choose the right answer (or press 1–4).',correct:'Correct! 🎉',wrongAns:'Not quite — the right answer is in green.',next:'Next →',
+ wrongOpts:'Wrong answers for multiple choice (optional)',wrongPh:n=>`Wrong answer ${n}`,tallyMC:t=>`${t.right} right first time · ${t.wrong} to practise again`
+},
+pt:{
+ opening:'A abrir a tua biblioteca…',saving:'A guardar…',savedAcc:'Tudo guardado',savedLocal:'Guardado só neste navegador',saveFull:'Armazenamento cheio',saveFail:'Não foi possível guardar — verifica a ligação',
+ folderFull:'Esta pasta está cheia — divide os apontamentos por outra pasta.',
+ subjects:'Disciplinas',home:'🏠 Início',newSubject:'＋ Nova disciplina',sideAcc:'Os teus cartões ficam guardados na tua conta, em privado.',sideLocal:'Guardado só neste navegador.',
+ dueToday:n=>`${n} ${P(n,'cartão','cartões')} para rever hoje`,caughtUp:'Está tudo em dia',heroNew:'Transforma os teus apontamentos em cartões de estudo',
+ leadHas:'Escolhe uma disciplina para continuar, ou junta apontamentos novos a uma pasta e o Revise faz os cartões.',
+ leadNew:'Cria uma disciplina, junta pastas para cada tema e escreve ou carrega os teus apontamentos. O Revise lê-os e faz cartões e uma ficha de revisão para estudares com repetição espaçada.',
+ studyAllDue:'Estudar tudo o que está pendente',tryEx:'Ver um exemplo',noAI:'A criação de cartões com IA não está disponível aqui, por isso o Revise faz cartões a partir de linhas como “Termo: definição”.',
+ ic:[['História · P','Porque é que o Império Romano se dividiu em 395?'],['Química · P','O que é uma <mark>ligação covalente</mark>?'],['Biologia · R','As mitocôndrias libertam energia pela respiração.']],
+ yourSubjects:'As tuas disciplinas',folders:n=>`${n} ${P(n,'pasta','pastas')}`,cards:n=>`${n} ${P(n,'cartão','cartões')}`,subfolders:n=>`${n} ${P(n,'subpasta','subpastas')}`,due:n=>`${n} ${P(n,'pendente','pendentes')}`,
+ studyDue:n=>`Estudar ${n} ${P(n,'pendente','pendentes')}`,practiseAll:'Praticar todos',practiseN:n=>`Praticar todos (${n})`,newFolder:'＋ Nova pasta',subfolder:'＋ Subpasta',renameColour:'Mudar nome / cor',rename:'Mudar nome',del:'Apagar',
+ noFolders:'Ainda não há pastas. Cria uma para cada tema, como “Células” ou “I Guerra Mundial”.',subfoldersH:'Subpastas',
+ tAdd:'Juntar apontamentos',tCards:n=>`Cartões (${n})`,tNotes:n=>`Apontamentos (${n})`,tRev:'Ficha de revisão',
+ titleOpt:'Título (opcional)',titlePh:'ex.: Capítulo 3 — Fotossíntese',yourNotes:'Os teus apontamentos',notesPh:'Escreve ou cola aqui os teus apontamentos…',
+ dropA:'Larga aqui os ficheiros ou',choose:'escolhe ficheiros',dropB:img=>`Texto, Markdown, PDF ou Word (.docx)${img?', ou fotografias de apontamentos à mão':''}. O texto aparece em cima para o poderes verificar.`,
+ nCards:'Número de cartões',auto:'O Revise decide',alsoRev:'Fazer também uma ficha de revisão',make:'✨ Fazer cartões',justSave:'Só guardar os apontamentos',
+ noAIrule:'Sem IA, o Revise faz cartões a partir de linhas escritas como “Termo: definição” ou “Termo – definição”.',
+ search:'Procurar cartões',addCard:'＋ Novo cartão',noCards:'Ainda não há cartões. Junta os teus apontamentos e o Revise faz os cartões.',question:'Pergunta',answer:'Resposta',cancel:'Cancelar',saveCard:'Guardar cartão',
+ known:'Quanto já sabes',edit:'Editar cartão',delCard:'Apagar cartão',noMatch:'Nenhum cartão encontrado.',
+ noNotes:'Ainda não há apontamentos guardados aqui.',untitled:'Apontamentos sem título',nCardsS:n=>`${n} ${P(n,'cartão','cartões')}`,more:'✨ Fazer mais cartões',writeRev:'Fazer ficha de revisão',delNotes:'Apagar apontamentos',
+ revEmptyAI:'As fichas de revisão aparecem aqui quando fazes cartões com “Fazer também uma ficha de revisão” assinalado, ou a partir do separador Apontamentos.',revEmptyNo:'As fichas de revisão precisam de IA, que não está disponível aqui.',
+ reading:f=>`A ler ${f}…`,photoNoAI:'Ler fotografias precisa de IA, que não está disponível aqui.',noText:f=>`Não foi encontrado texto em ${f}.`,readFail:f=>`Não foi possível ler ${f}. Experimenta copiar o texto para aqui.`,
+ rate:'Demasiados pedidos — espera um minuto e tenta outra vez.',aiOff:'A IA não está disponível — a fazer cartões a partir de linhas “Termo: definição”.',aiFail:'Algo correu mal ao fazer os cartões. Tenta outra vez.',
+ writing:'A ler os teus apontamentos e a escrever cartões…',writingRev:'A escrever a ficha de revisão…',noneBack:'Não vieram cartões — junta mais pormenores aos apontamentos.',
+ noRule:'Não há linhas “Termo: definição”. Escreve apontamentos como “Osmose: movimento da água…”.',made:n=>`${n} ${P(n,'cartão feito','cartões feitos')} ✨`,defNote:'Apontamentos',
+ nothing:'Ainda não há cartões para estudar aqui.',nice:'Muito bem! 🎉',went:(n,t)=>`Estudaste ${n} ${P(n,'cartão','cartões')} de ${t}.`,tally:t=>`${t.easy} fáceis · ${t.good} bem · ${t.hard} difíceis · ${t.again} para praticar outra vez`,
+ done:'Concluir',stop:'✕ Parar',flip:'Virar cartão',think:'Pensa na resposta e depois toca no cartão (ou carrega em Espaço) para confirmar.',
+ again:'Outra vez',hard:'Difícil',good:'Bem',easy:'Fácil',now:'agora',days:d=>`${d} ${P(d,'dia','dias')}`,allSubj:'todas as disciplinas',
+ nsTitle:'Nova disciplina',nsPh:'ex.: Biologia',create:'Criar',save:'Guardar',editSubj:'Editar disciplina',colour:'Cor',sure:'Tens a certeza?',
+ delSubjQ:s=>`Apagar “${s}” e todas as suas pastas e cartões?`,nfTitle:'Nova pasta',nsfTitle:'Nova subpasta',nfPh:'ex.: Células',renameF:'Mudar nome da pasta',
+ delFolderQ:(f,sub)=>`Apagar “${f}”${sub?' e as suas subpastas':''} com todos os cartões e apontamentos?`,needNotes:'Primeiro escreve, cola ou carrega apontamentos.',notesSaved:'Apontamentos guardados',
+ delNotesQ:n=>`Apagar estes apontamentos${n?` e ${P(n,'o cartão feito','os '+n+' cartões feitos')} a partir deles`:''}?`,needQA:'Um cartão precisa de pergunta e resposta.',
+ exAdded:'Apontamentos de exemplo prontos — carrega em “Fazer cartões”.',cantReach:'Não foi possível abrir os cartões',cantReachP:'Neste momento não é possível abrir os teus cartões. Verifica a ligação e tenta outra vez.',retry:'Tentar outra vez',
+ menu:'Mostrar disciplinas',
+ exSubj:'Biologia (exemplo)',exFolder:'Células',exTitle:'Estrutura da célula',
+ exText:`Estrutura da célula\n\nCélula: a unidade mais pequena da vida.\nNúcleo: controla a célula e contém o ADN.\nMembrana celular: controla o que entra e sai da célula.\nCitoplasma: líquido gelatinoso onde acontece a maior parte das reações químicas.\nMitocôndrias: libertam energia da glicose pela respiração aeróbia.\nRibossomas: onde se fazem as proteínas.\nParede celular: feita de celulose; reforça as células vegetais.\nCloroplastos: absorvem a luz para a fotossíntese (só nas células vegetais).\n\nAs células animais não têm parede celular, cloroplastos nem vacúolo permanente.`,
+ aiLang:'European Portuguese (Portugal)',
+ preparing:'A preparar as opções de resposta…',mcFail:'Não foi possível fazer opções para alguns cartões — esses aparecem como cartões para virar.',onlyFlip:'Não foi possível fazer opções para este cartão, por isso por agora é para virar.',
+ mkOpts:n=>`✨ Fazer opções de escolha múltipla para ${n} ${P(n,'cartão','cartões')}`,noOpts:'Ainda sem opções de resposta',preparingN:(a,b)=>`A preparar as opções de resposta… ${a} / ${b}`,optsDone:'Todos os cartões já têm opções de escolha múltipla ✨',
+ showAns:'👁 Mostrar respostas',hideAns:'Esconder respostas',reveal:'Ver resposta',tryHint:'Escolhe uma resposta em cada cartão para te testares.',
+ themeLbl:'Página clara ou escura',lightW:'Claro',darkW:'Escuro',retryMC:'Tentar outra vez',modeMC:'Escolha múltipla',modeFlip:'Virar cartões',
+ pickAns:'Escolhe a resposta certa (ou carrega em 1–4).',correct:'Certo! 🎉',wrongAns:'Não é bem — a resposta certa está a verde.',next:'Seguinte →',
+ wrongOpts:'Respostas erradas para a escolha múltipla (opcional)',wrongPh:n=>`Resposta errada ${n}`,tallyMC:t=>`${t.right} certas à primeira · ${t.wrong} para praticar outra vez`
+}};
+let LANG='en';
+try{const saved=localStorage.getItem('revise:lang');LANG=saved||((navigator.language||'').toLowerCase().startsWith('pt')?'pt':'en')}catch(e){LANG=(navigator.language||'').toLowerCase().startsWith('pt')?'pt':'en'}
+if(!L[LANG])LANG='en';
+const T=(k,...a)=>{const v=L[LANG][k]??L.en[k];return typeof v==='function'?v(...a):v};
+function setLang(l){LANG=l;try{localStorage.setItem('revise:lang',l)}catch(e){}
+  document.documentElement.lang=l==='pt'?'pt-PT':'en';
+  document.title=l==='pt'?'Revise — Cartões de estudo':'Revise — Flashcards';
+  document.querySelectorAll('.lang button').forEach(b=>{b.classList.toggle('on',b.dataset.lang===l);b.setAttribute('aria-pressed',b.dataset.lang===l)});
+  $('#menuBtn').textContent='☰ '+T('subjects');$('#menuBtn').setAttribute('aria-label',T('menu'));
+  paintTheme();
+  if(backend){if(!S.loadFail)status(backend.name==='db'?T('savedAcc'):T('savedLocal'));render();renderStudy()}
+}
+
+let THEME='';try{THEME=localStorage.getItem('revise:theme')||''}catch(e){}
+const sysDark=()=>{try{return matchMedia('(prefers-color-scheme: dark)').matches}catch(e){return false}};
+const isDark=()=>{const r=document.documentElement,m=r.dataset.mode||r.dataset.theme;return m?m==='dark':sysDark()};
+function paintTheme(){const d=isDark();$('#themeSw').setAttribute('aria-label',T('themeLbl'));
+  document.querySelectorAll('#themeSw button').forEach(b=>{const on=(b.dataset.mode==='dark')===d;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on);b.querySelector('.w').textContent=' '+T(b.dataset.mode==='dark'?'darkW':'lightW')})}
+function applyTheme(t){THEME=t;if(t){const r=document.documentElement;r.dataset.mode=t;try{r.style.setProperty('color-scheme',t,'important')}catch(e){}}try{localStorage.setItem('revise:theme',t)}catch(e){}paintTheme()}
+if(THEME){document.documentElement.dataset.mode=THEME;try{document.documentElement.style.setProperty('color-scheme',THEME,'important')}catch(e){}}
+try{new MutationObserver(paintTheme).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']})}catch(e){}
+let MODE='mc';try{MODE=localStorage.getItem('revise:mode')||'mc'}catch(e){}
+const S={tried:{},showAns:false,lib:{subjects:[],folders:[]},decks:{},view:{type:'home'},open:{},draft:{},busy:null,search:'',editing:null,loadFail:false};
+let AI=null,IMG=false,backend=null,study=null;
+
+/* ---------- storage ---------- */
+const localBackend={
+  name:'local',
+  async load(){const out={lib:null,decks:{}};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!k.startsWith('revise:')||k==='revise:lang')continue;const v=JSON.parse(localStorage.getItem(k));if(k==='revise:lib')out.lib=v;else if(k.startsWith('revise:deck:'))out.decks[k.slice(12)]=v}}catch(e){}return out},
+  async save(k,b){try{localStorage.setItem(k==='lib'?'revise:lib':'revise:deck:'+k,JSON.stringify(b))}catch(e){throw{code:'local'}}},
+  async remove(k){try{localStorage.removeItem('revise:deck:'+k)}catch(e){}}
+};
+function dbBackend(db,uid){
+  const col=db.collection('data/users/'+uid);
+  const ref=k=>col.doc(k==='lib'?'library':'deck_'+k);
+  return{name:'db',
+    async load(){
+      const snap=await Promise.race([col.get(),new Promise((_,r)=>setTimeout(()=>r({code:'timeout'}),10000))]);
+      const out={lib:null,decks:{}};
+      // snapshots are frozen: copy them so the app can change them
+      const thaw=v=>JSON.parse(JSON.stringify(v||{}));
+      for(const d of snap.docs){if(!d.exists)continue;if(d.id==='library')out.lib=thaw(d.data());else if(d.id.startsWith('deck_'))out.decks[d.id.slice(5)]=thaw(d.data())}
+      return out},
+    async save(k,b){const body=JSON.parse(JSON.stringify(b));try{await ref(k).set(body)}catch(e){if(e&&e.code==='unavailable'){await new Promise(r=>setTimeout(r,800+Math.random()*800));await ref(k).set(body)}else throw e}},
+    async remove(k){await ref(k).delete()}
+  };
+}
+const dirty=new Set();let saveT=null,flushing=false;
+function mark(k){dirty.add(k);clearTimeout(saveT);saveT=setTimeout(flush,700);status(T('saving'))}
+async function flush(){
+  if(flushing){saveT=setTimeout(flush,400);return}
+  flushing=true;
+  try{
+    while(dirty.size){const k=dirty.values().next().value;dirty.delete(k);
+      const body=k==='lib'?S.lib:S.decks[k];
+      if(body===undefined){await backend.remove(k);continue}
+      if(JSON.stringify(body).length>250000){toast(T('folderFull'));continue}
+      await backend.save(k,body)}
+    status(backend.name==='db'?T('savedAcc'):T('savedLocal'))
+  }catch(e){status(e&&e.code==='quota_exceeded'?T('saveFull'):T('saveFail'))}
+  flushing=false
+}
+function status(t){$('#status').textContent=t}
+function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),3200)}
+
+/* ---------- helpers ---------- */
+const deck=fid=>S.decks[fid]||(S.decks[fid]={cards:[],notes:[]});
+const subj=id=>S.lib.subjects.find(s=>s.id===id);
+const fold=id=>S.lib.folders.find(f=>f.id===id);
+const kids=(sid,pid)=>S.lib.folders.filter(f=>f.subjectId===sid&&(f.parentId||null)===(pid||null));
+const descend=fid=>{const out=[fid];for(const f of S.lib.folders)if(f.parentId===fid)out.push(...descend(f.id));return out};
+const dueIn=fid=>(S.decks[fid]?.cards||[]).filter(c=>(c.due||0)<=Date.now()).length;
+const subjDue=sid=>S.lib.folders.filter(f=>f.subjectId===sid).reduce((n,f)=>n+dueIn(f.id),0);
+const subjCount=sid=>S.lib.folders.filter(f=>f.subjectId===sid).reduce((n,f)=>n+(S.decks[f.id]?.cards.length||0),0);
+const go=v=>{S.view=v;S.editing=null;S.search='';$('#side').classList.remove('open');render();try{window.scrollTo(0,0)}catch(e){}};
+function md(t){
+  let h='',ul=false;
+  const inl=s=>esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+  for(const raw of String(t||'').split('\n')){const l=raw.trim();
+    if(/^[-*•]\s+/.test(l)){if(!ul){h+='<ul>';ul=true}h+='<li>'+inl(l.replace(/^[-*•]\s+/,''))+'</li>';continue}
+    if(ul){h+='</ul>';ul=false}
+    if(!l)continue;
+    if(/^#{1,4}\s/.test(l))h+='<h3>'+inl(l.replace(/^#+\s/,''))+'</h3>';else h+='<p>'+inl(l)+'</p>'}
+  return h+(ul?'</ul>':'')
+}
+const fmtDate=t=>new Date(t).toLocaleDateString(LANG==='pt'?'pt-PT':'en-GB',{day:'numeric',month:'short'});
+
+/* ---------- dialogs ---------- */
+function ask(title,{value='',ph='',colors=false,color=COLORS[0],ok}={}){
+  ok=ok||T('save');
+  return new Promise(res=>{
+    const d=$('#dlg');let col=color;
+    d.innerHTML=`<div class="dlg" role="dialog" aria-modal="true"><h2>${esc(title)}</h2><input class="t" id="dIn" value="${esc(value)}" placeholder="${esc(ph)}" maxlength="60" enterkeyhint="done">
+      ${colors?`<div class="sw">${COLORS.map(c=>`<button type="button" data-c="${c}" style="background:${c}" class="${c===col?'on':''}" aria-label="${esc(T('colour'))}"></button>`).join('')}</div>`:''}
+      <div class="row" style="margin-top:18px;justify-content:flex-end"><button type="button" class="btn ghost" id="dNo">${esc(T('cancel'))}</button><button type="button" class="btn pri" id="dOk">${esc(ok)}</button></div></div>`;
+    d.hidden=false;const inp=$('#dIn');inp.focus();inp.select();
+    const close=v=>{d.hidden=true;d.innerHTML='';res(v)};
+    const okGo=()=>{const v=inp.value.trim();if(!v){inp.focus();inp.style.borderColor='var(--red)';return}close(colors?{name:v,color:col}:v)};
+    $('#dOk').onclick=okGo;inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();okGo()}};
+    $('#dNo').onclick=()=>close(null);
+    d.querySelectorAll('.sw button').forEach(b=>b.onclick=()=>{col=b.dataset.c;d.querySelectorAll('.sw button').forEach(x=>x.classList.toggle('on',x===b))});
+    d.onclick=e=>{if(e.target===d)close(null)};d._close=()=>close(null);
+  })
+}
+function confirmBox(text){
+  return new Promise(res=>{const d=$('#dlg');
+    d.innerHTML=`<div class="dlg"><h2>${esc(T('sure'))}</h2><p>${esc(text)}</p><div class="row" style="justify-content:flex-end"><button class="btn ghost" id="dNo">${esc(T('cancel'))}</button><button class="btn danger" id="dYes">${esc(T('del'))}</button></div></div>`;
+    d.hidden=false;const close=v=>{d.hidden=true;d.innerHTML='';res(v)};
+    $('#dNo').onclick=()=>close(false);$('#dYes').onclick=()=>close(true);d.onclick=e=>{if(e.target===d)close(false)};d._close=()=>close(false);$('#dYes').focus()})
+}
+
+/* ---------- sidebar ---------- */
+function renderSide(){
+  const v=S.view;
+  const tree=(sid,pid,depth)=>kids(sid,pid).map(f=>{const n=dueIn(f.id);
+    return `<button class="nav ${v.type==='folder'&&v.id===f.id?'on':''}" style="padding-left:${18+depth*16}px" data-act="folder" data-id="${f.id}"><span>📁</span><span class="nm">${esc(f.name)}</span>${n?`<span class="due">${n}</span>`:''}</button>`+tree(sid,f.id,depth+1)}).join('');
+  $('#side').innerHTML=`<button class="nav ${v.type==='home'?'on':''}" data-act="home"><span class="nm">${T('home')}</span></button>
+  <h2>${T('subjects')}</h2>
+  ${S.lib.subjects.map(s=>{const n=subjDue(s.id);const on=v.type==='subject'&&v.id===s.id;const inside=v.type==='folder'&&fold(v.id)?.subjectId===s.id;
+    return `<button class="nav ${on?'on':''}" data-act="subject" data-id="${s.id}"><span class="dot" style="background:${s.color}"></span><span class="nm">${esc(s.name)}</span>${n?`<span class="due">${n}</span>`:''}</button>${(on||inside||S.open[s.id])?tree(s.id,null,0):''}`}).join('')}
+  <button class="nav" data-act="newSubject" style="color:var(--blue);font-weight:700"><span class="nm">${T('newSubject')}</span></button>
+  <p class="note" style="margin:auto 8px 0">${backend?.name==='db'?T('sideAcc'):T('sideLocal')}</p>`;
+}
+
+/* ---------- views ---------- */
+function viewHome(){
+  const totalDue=S.lib.subjects.reduce((n,s)=>n+subjDue(s.id),0);
+  const has=S.lib.subjects.length>0;
+  return `<section class="hero"><div>
+    <h1>${has?(totalDue?T('dueToday',totalDue):T('caughtUp')):T('heroNew')}</h1>
+    <p class="lead">${has?T('leadHas'):T('leadNew')}</p>
+    <div class="row">${totalDue?`<button class="btn hi" data-act="studyAllDue">${T('studyAllDue')}</button>`:''}<button class="btn pri" data-act="newSubject">${T('newSubject')}</button>${has?'':`<button class="btn ghost" data-act="example">${T('tryEx')}</button>`}</div>
+    ${AI?'':`<p class="note" style="margin-top:14px">${T('noAI')}</p>`}
+  </div>
+  <div class="stack" aria-hidden="true">${T('ic').map(([a,b])=>`<div class="ic"><small>${a}</small>${b}</div>`).join('')}</div></section>
+  ${has?`<h3>${T('yourSubjects')}</h3><div class="grid">${S.lib.subjects.map(s=>{const n=subjDue(s.id),c=subjCount(s.id),fc=S.lib.folders.filter(f=>f.subjectId===s.id).length;
+    return `<button class="tile" style="--c:${s.color}" data-act="subject" data-id="${s.id}"><b>${esc(s.name)}</b><span>${T('folders',fc)} · ${T('cards',c)}</span>${n?`<span class="due" style="align-self:flex-start">${T('due',n)}</span>`:''}</button>`}).join('')}
+    <button class="tile add" data-act="newSubject">${T('newSubject')}</button></div>`:''}`;
+}
+function viewSubject(s){
+  const fs=kids(s.id,null),n=subjDue(s.id),total=subjCount(s.id);
+  return `<div class="crumb"><button data-act="home">${T('home').replace('🏠 ','')}</button>›</div>
+  <div class="band" style="--c:${s.color}"></div>
+  <h1>${esc(s.name)}</h1>
+  <div class="row" style="margin:14px 0 24px">
+    ${total?`<button class="btn hi" data-act="studySubject" data-id="${s.id}">${n?T('studyDue',n):T('practiseAll')}</button>`:''}
+    <button class="btn pri" data-act="newFolder" data-sid="${s.id}">${T('newFolder')}</button>
+    <button class="btn ghost" data-act="editSubject" data-id="${s.id}">${T('renameColour')}</button>
+    <button class="btn ghost danger" data-act="delSubject" data-id="${s.id}">${T('del')}</button></div>
+  ${fs.length?`<div class="grid">${fs.map(f=>folderTile(f,s.color)).join('')}<button class="tile add" data-act="newFolder" data-sid="${s.id}">${T('newFolder')}</button></div>`
+  :`<div class="empty"><p>${T('noFolders')}</p><button class="btn pri" data-act="newFolder" data-sid="${s.id}">${T('newFolder')}</button></div>`}`;
+}
+function folderTile(f,color){const all=descend(f.id);const c=all.reduce((n,id)=>n+(S.decks[id]?.cards.length||0),0),d=all.reduce((n,id)=>n+dueIn(id),0),sub=kids(f.subjectId,f.id).length;
+  return `<button class="tile" style="--c:${color}" data-act="folder" data-id="${f.id}"><b>📁 ${esc(f.name)}</b><span>${T('cards',c)}${sub?` · ${T('subfolders',sub)}`:''}</span>${d?`<span class="due" style="align-self:flex-start">${T('due',d)}</span>`:''}</button>`}
+function viewFolder(f){
+  const s=subj(f.subjectId),dk=deck(f.id);
+  const path=[];let p=f;while(p){path.unshift(p);p=p.parentId?fold(p.parentId):null}
+  const tab=S.view.tab||(dk.cards.length?'cards':'add');
+  const n=dueIn(f.id),subs=kids(f.subjectId,f.id);
+  return `<div class="crumb"><button data-act="home">${T('home').replace('🏠 ','')}</button>›<button data-act="subject" data-id="${s.id}">${esc(s.name)}</button>›${path.slice(0,-1).map(x=>`<button data-act="folder" data-id="${x.id}">${esc(x.name)}</button>›`).join('')}</div>
+  <div class="band" style="--c:${s.color}"></div>
+  <h1>${esc(f.name)}</h1>
+  <div class="row" style="margin-top:14px">
+    ${dk.cards.length?`<button class="btn hi" data-act="studyFolder" data-id="${f.id}">${n?T('studyDue',n):T('practiseN',dk.cards.length)}</button>`:''}
+    ${n&&n<dk.cards.length?`<button class="btn ghost" data-act="studyFolderAll" data-id="${f.id}">${T('practiseN',dk.cards.length)}</button>`:''}
+    <button class="btn ghost" data-act="newFolder" data-sid="${s.id}" data-pid="${f.id}">${T('subfolder')}</button>
+    <button class="btn ghost" data-act="renameFolder" data-id="${f.id}">${T('rename')}</button>
+    <button class="btn ghost danger" data-act="delFolder" data-id="${f.id}">${T('del')}</button></div>
+  ${subs.length?`<h3>${T('subfoldersH')}</h3><div class="grid">${subs.map(x=>folderTile(x,s.color)).join('')}</div>`:''}
+  <div class="tabs" role="tablist">
+    ${[['add',T('tAdd')],['cards',T('tCards',dk.cards.length)],['notes',T('tNotes',dk.notes.length)],['rev',T('tRev')]].map(([k,l])=>`<button role="tab" class="${tab===k?'on':''}" data-act="tab" data-tab="${k}">${l}</button>`).join('')}
+  </div>
+  ${tab==='add'?tabAdd(f):tab==='cards'?tabCards(f,dk):tab==='notes'?tabNotes(f,dk):tabRev(f,dk)}`;
+}
+function tabAdd(f){
+  const d=S.draft[f.id]||{title:'',text:''};const busy=S.busy&&S.busy.fid===f.id;
+  return `<label class="f" for="nTitle">${T('titleOpt')}</label><input class="t" id="nTitle" data-draft="title" value="${esc(d.title)}" placeholder="${esc(T('titlePh'))}">
+  <label class="f" for="nText">${T('yourNotes')}</label><textarea id="nText" data-draft="text" placeholder="${esc(T('notesPh'))}">${esc(d.text)}</textarea>
+  <div class="drop" id="drop">${T('dropA')} <button class="btn ghost" data-act="pick" style="min-height:36px;padding:4px 12px">${T('choose')}</button><br>
+   <span class="note">${T('dropB',IMG)}</span></div>
+  <div class="row"><label class="note" for="nCount">${T('nCards')}</label><select id="nCount"><option value="auto">${T('auto')}</option><option>10</option><option>20</option><option>30</option></select>
+   <label class="note"><input type="checkbox" id="nRev" checked> ${T('alsoRev')}</label></div>
+  <div class="row" style="margin-top:14px"><button class="btn pri" data-act="generate" ${busy?'disabled':''}>${T('make')}</button><button class="btn ghost" data-act="saveNote" ${busy?'disabled':''}>${T('justSave')}</button></div>
+  ${busy?`<div class="busy" role="status"><span class="spin"></span>${esc(S.busy.msg)}</div>`:''}
+  ${AI?'':`<p class="note">${T('noAIrule')}</p>`}`;
+}
+function seededOrder(c){
+  const opts=[c.a,...(c.wrong||[]).filter(Boolean)];
+  let s=0;for(const ch of c.id)s=(s*31+ch.charCodeAt(0))>>>0;
+  return opts.map((o,i)=>({o,i,k:(s=(s*1103515245+12345)>>>0)})).sort((x,y)=>x.k-y.k);
+}
+function cardAnswers(c){
+  const hasOpts=(c.wrong||[]).filter(Boolean).length>=2;
+  if(S.showAns)return `<span class="okA">✓ ${esc(c.a)}</span>${(c.wrong||[]).filter(Boolean).map(w=>`<span class="badA">✗ ${esc(w)}</span>`).join('')||`<span class="noA">${T('noOpts')}</span>`}`;
+  const tried=S.tried[c.id];
+  if(!hasOpts){
+    return tried===undefined?`<button class="btn ghost" style="min-height:38px;padding:4px 12px" data-act="reveal" data-id="${c.id}">${T('reveal')}</button>`:`<span class="okA">${esc(c.a)}</span>`;
+  }
+  const order=seededOrder(c);
+  return order.map(({o,i},n)=>{const cls=tried===undefined?'':i===0?'ok':n===tried?'bad':'';
+      return `<button class="copt ${cls}" data-act="tryOpt" data-id="${c.id}" data-n="${n}" ${tried!==undefined?'disabled':''}><b>${'ABCD'[n]}</b><span>${esc(o)}</span></button>`}).join('')
+    +(tried!==undefined?`<p class="cfb" style="color:${order[tried].i===0?'#2f9e5a':'#d9434a'}">${order[tried].i===0?T('correct'):T('wrongAns')} <button class="ib" style="min-height:28px" data-act="untry" data-id="${c.id}">↺</button></p>`:'');
+}
+function tabCards(f,dk){
+  const q=S.search.toLowerCase();
+  const list=dk.cards.filter(c=>!q||(c.q+' '+c.a).toLowerCase().includes(q));
+  return `<div class="row" style="margin-bottom:14px"><input class="t" id="cSearch" placeholder="${esc(T('search'))}" value="${esc(S.search)}" style="flex:1;min-width:180px"><button class="btn pri" data-act="addCard">${T('addCard')}</button></div>
+  ${(()=>{const m=dk.cards.filter(needsWrong).length;const busy=S.busy&&S.busy.fid===f.id;
+     return busy?`<div class="busy" role="status" style="margin:0 0 14px"><span class="spin"></span>${esc(S.busy.msg)}</div>`
+      :m&&AI?`<div class="row" style="margin-bottom:14px"><button class="btn hi" data-act="mkOpts">${T('mkOpts',m)}</button></div>`:''})()}
+  ${dk.cards.length?`<div class="row" style="margin-bottom:14px;justify-content:space-between"><span class="note">${S.showAns?'':T('tryHint')}</span><button class="btn ghost" data-act="toggleAns">${S.showAns?T('hideAns'):T('showAns')}</button></div>`:''}
+  ${!dk.cards.length?`<div class="empty"><p>${T('noCards')}</p><button class="btn pri" data-act="tab" data-tab="add">${T('tAdd')}</button></div>`:''}
+  <div class="cards">${list.map(c=>S.editing===c.id?`<div class="cr" style="grid-template-columns:minmax(0,1fr)">
+      <label class="f">${T('question')}</label><textarea id="eQ" style="min-height:70px">${esc(c.q)}</textarea>
+      <label class="f">${T('answer')}</label><textarea id="eA" style="min-height:90px">${esc(c.a)}</textarea>
+      <label class="f">${T('wrongOpts')}</label>${[0,1,2].map(i=>`<input class="t eW" style="margin-bottom:8px" value="${esc((c.wrong||[])[i]||'')}" placeholder="${esc(T('wrongPh',i+1))}">`).join('')}
+      <div class="row" style="justify-content:flex-end"><button class="btn ghost" data-act="cancelEdit" data-id="${c.id}">${T('cancel')}</button><button class="btn pri" data-act="saveCard" data-id="${c.id}">${T('saveCard')}</button></div></div>`
+    :`<div class="cr"><div><div class="q">${esc(c.q)}</div><div class="lvl" title="${esc(T('known'))}">${INT.slice(1).map((_,i)=>`<i class="${i<(c.box||0)?'on':''}"></i>`).join('')}</div></div><div class="a">${cardAnswers(c)}</div>
+      <div class="ops"><button class="ib" data-act="editCard" data-id="${c.id}" aria-label="${esc(T('edit'))}">✎</button><button class="ib" data-act="delCard" data-id="${c.id}" aria-label="${esc(T('delCard'))}">✕</button></div></div>`).join('')}</div>
+  ${q&&!list.length?`<p class="note">${T('noMatch')}</p>`:''}`;
+}
+function tabNotes(f,dk){
+  if(!dk.notes.length)return `<div class="empty"><p>${T('noNotes')}</p><button class="btn pri" data-act="tab" data-tab="add">${T('tAdd')}</button></div>`;
+  const busy=!!S.busy;
+  return dk.notes.slice().reverse().map(n=>`<details class="nt"><summary>${esc(n.title||T('untitled'))}<span>${fmtDate(n.created)} · ${T('nCardsS',dk.cards.filter(c=>c.noteId===n.id).length)}</span></summary>
+    <div class="body">${esc(n.text)}</div>
+    <div class="row" style="padding:0 14px 14px"><button class="btn ghost" data-act="more" data-id="${n.id}" ${busy?'disabled':''}>${T('more')}</button>${AI&&!n.revision?`<button class="btn ghost" data-act="mkRev" data-id="${n.id}" ${busy?'disabled':''}>${T('writeRev')}</button>`:''}<button class="btn ghost danger" data-act="delNote" data-id="${n.id}">${T('delNotes')}</button></div></details>`).join('')
+   +(S.busy&&S.busy.fid===f.id?`<div class="busy" role="status"><span class="spin"></span>${esc(S.busy.msg)}</div>`:'');
+}
+function tabRev(f,dk){
+  const r=dk.notes.filter(n=>n.revision);
+  if(!r.length)return `<div class="empty"><p>${AI?T('revEmptyAI'):T('revEmptyNo')}</p></div>`;
+  return r.map(n=>`<article class="rev"><p class="note" style="margin:0 0 4px">${esc(n.title||T('untitled'))} · ${fmtDate(n.created)}</p>${md(n.revision)}</article>`).join('');
+}
+function render(){
+  if(!backend)return;
+  if(S.loadFail){$('#main').innerHTML=`<div class="empty"><p>${T('cantReachP')}</p><button class="btn pri" id="retry">${T('retry')}</button></div>`;$('#retry').onclick=load;$('#side').innerHTML='';return}
+  renderSide();
+  const v=S.view;let h;
+  if(v.type==='subject'&&subj(v.id))h=viewSubject(subj(v.id));
+  else if(v.type==='folder'&&fold(v.id))h=viewFolder(fold(v.id));
+  else{S.view={type:'home'};h=viewHome()}
+  $('#main').innerHTML=h;
+  const drop=$('#drop');
+  if(drop){drop.ondragover=e=>{e.preventDefault();drop.classList.add('over')};drop.ondragleave=()=>drop.classList.remove('over');drop.ondrop=e=>{e.preventDefault();drop.classList.remove('over');handleFiles([...e.dataTransfer.files])}}
+  const cs=$('#cSearch');if(cs)cs.oninput=()=>{S.search=cs.value;const pos=cs.selectionStart;render();const n=$('#cSearch');n.focus();n.setSelectionRange(pos,pos)};
+}
+
+/* ---------- reading files ---------- */
+const loadScript=src=>new Promise((res,rej)=>{if(document.querySelector(`script[src="${src}"]`))return res();const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s)});
+async function pdfText(file){
+  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js');
+  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+  const lib=window.pdfjsLib;lib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const pdf=await lib.getDocument({data:new Uint8Array(await file.arrayBuffer()),disableFontFace:true}).promise;
+  let out='';for(let i=1;i<=Math.min(pdf.numPages,60);i++){const tc=await(await pdf.getPage(i)).getTextContent();let line='';for(const it of tc.items){line+=it.str+(it.hasEOL?'\n':' ')}out+=line+'\n\n'}
+  return out.replace(/[ \t]+\n/g,'\n').trim();
+}
+async function docxText(file){await loadScript('https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js');return (await window.mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()})).value.trim()}
+async function shrink(file){
+  try{const bmp=await createImageBitmap(file);const k=Math.min(1,1800/Math.max(bmp.width,bmp.height));const c=document.createElement('canvas');c.width=Math.round(bmp.width*k);c.height=Math.round(bmp.height*k);c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
+    return await new Promise(r=>c.toBlob(b=>r(b||file),'image/jpeg',0.85))}catch(e){return file}
+}
+async function imageText(file){
+  const blob=await shrink(file);
+  const r=await askJSON(`These are photos of a student's study notes (handwritten or printed). Transcribe ALL the notes text faithfully, in the original language, keeping headings and bullet points as plain text lines. Don't add anything that isn't written. If something is unreadable write [?]. Return JSON: {"text": "the transcription"}`,{images:[blob]});
+  return String(r&&r.text||'').trim();
+}
+async function handleFiles(files){
+  const f=fold(S.view.id);if(!f||!files.length)return;
+  const d=S.draft[f.id]||(S.draft[f.id]={title:'',text:''});
+  for(const file of files){
+    const nm=file.name.toLowerCase();setBusy(f.id,T('reading',file.name));
+    try{let t='';
+      if(file.type.startsWith('image/')){if(!AI||!IMG){toast(T('photoNoAI'));continue}t=await imageText(file)}
+      else if(nm.endsWith('.pdf'))t=await pdfText(file);
+      else if(nm.endsWith('.docx'))t=await docxText(file);
+      else t=await file.text();
+      if(!t){toast(T('noText',file.name));continue}
+      d.text=(d.text?d.text.trim()+'\n\n':'')+t;
+      if(!d.title)d.title=file.name.replace(/\.[^.]+$/,'');
+    }catch(e){toast(e&&e.code==='rate_limited'?T('rate'):T('readFail',file.name))}
+  }
+  setBusy(null);
+}
+function setBusy(fid,msg){S.busy=fid?{fid,msg}:null;if(S.view.type==='folder')render()}
+
+/* ---------- making cards ---------- */
+function ruleCards(text){
+  const out=[];
+  for(const raw of text.split('\n')){const l=raw.replace(/^[-*•\d.)\s]+/,'').trim();
+    const m=l.match(/^(.{2,80}?)\s*(?::|\s[-–—=]\s|\s?[–—]\s?)\s*(.{3,})$/);
+    if(m&&!/^https?$/i.test(m[1]))out.push({q:m[1].trim(),a:m[2].trim()})}
+  return out;
+}
+async function aiCards(text,{count,rev,avoid}){
+  const prompt=`You are a study assistant for a secondary-school student (about 12–18 years old). Turn the notes below into flashcards for revision.
+Rules:
+- Write the cards in the same language as the notes. If the notes mix languages or the language is unclear, use ${L[LANG].aiLang}.
+- Each card tests ONE fact or idea. The question is short and clear. The answer is 1–3 short sentences or a formula/date/list.
+- Mix card kinds: key terms and definitions, "why"/"how" questions, important dates, numbers, formulas, causes and effects, comparisons.
+- Use only information in the notes. Don't invent facts. Fix obvious spelling mistakes.
+- Cards are used as multiple-choice questions, so keep each answer short (ideally under 20 words), and give each card exactly 3 WRONG answers ("wrong"): plausible to a student, similar in length, style and topic to the correct answer, but clearly incorrect. Never a near-copy of the right answer, never "all of the above"/"none of the above".
+- The wrong answers must answer the SAME question in the SAME form as the correct one: for a yes/no question they are other yes/no statements about the same point (e.g. "Yes, all cells have one." / "Only some animal cells have one."); for a name, date, number, place, formula or definition they are other names, dates, numbers, places, formulas or definitions of that same kind. A student who hasn't studied should find all 4 options believable.
+- ${count==='auto'?'Choose a sensible number of cards: roughly one per key idea, between 5 and 40.':'Make about '+count+' cards.'}
+${avoid.length?'- Do NOT repeat these existing questions: '+avoid.slice(0,80).map(q=>JSON.stringify(q)).join('; '):''}
+${rev?'- Also write a revision sheet in the same language as the notes: a compact summary for last-minute review, with "## " headings, "- " bullet points and **bold** key terms. At most about 250 words.':''}
+Return ONLY JSON: {"title":"short title for these notes","cards":[{"q":"...","a":"...","wrong":["...","...","..."]}],"revision":"${rev?'the revision sheet':''}"}
+
+NOTES:
+"""
+${text.slice(0,60000)}
+"""`;
+  const r=await askJSON(prompt);
+  const cards=(pickArr(r,['cards','flashcards','items'])||[]).filter(c=>c&&c.q&&c.a).map(c=>({q:String(c.q).trim(),a:String(c.a).trim(),wrong:wrongOf(c,c.a)}));
+  return{title:String(r&&r.title||'').slice(0,80),cards,revision:rev?String(r&&r.revision||''):''};
+}
+async function aiRevision(text){
+  const r=await askJSON(`Write a revision sheet for a secondary-school student from these notes, in the same language as the notes (if unclear, use ${L[LANG].aiLang}): a compact summary for last-minute review with "## " headings, "- " bullet points and **bold** key terms, at most about 250 words. Use only what is in the notes. Return JSON {"revision":"..."}\n\nNOTES:\n"""\n${text.slice(0,60000)}\n"""`);
+  return String(r&&r.revision||'');
+}
+async function askJSON(prompt,opts={}){
+  try{return await AI.json(prompt,{modelTier:'default',...opts})}
+  catch(e){
+    if(e&&(e.code==='not_granted'||e.code==='rate_limited'))throw e;
+    const r=await AI(prompt,{modelTier:'default',...opts});
+    const t=String(r&&r.text||'');const m=t.match(/\{[\s\S]*\}/);
+    if(!m)throw e||{code:'parse'};return JSON.parse(m[0]);
+  }
+}
+function aiError(e){
+  if(e&&e.code==='not_granted'){AI=null;IMG=false;toast(T('aiOff'));return true}
+  toast(e&&e.code==='rate_limited'?T('rate'):T('aiFail'));return false
+}
+async function makeCards(f,text,title,note){
+  const dk=deck(f.id);
+  const opts={count:$('#nCount')?.value||'auto',rev:note?false:($('#nRev')?.checked??true),avoid:dk.cards.map(c=>c.q)};
+  let res=null;
+  if(AI){setBusy(f.id,T('writing'));
+    try{res=await aiCards(text,opts)}catch(e){if(!aiError(e)){setBusy(null);return false}}}
+  if(!res)res={title:'',cards:ruleCards(text),revision:''};
+  if(!res.cards.length){setBusy(null);toast(AI?T('noneBack'):T('noRule'));return false}
+  if(!note){note={id:nid(),title:title||res.title||T('defNote'),text:text.slice(0,80000),created:Date.now(),revision:res.revision||null};dk.notes.push(note)}
+  const now=Date.now();
+  dk.cards.push(...res.cards.map(c=>({id:nid(),q:c.q.slice(0,500),a:c.a.slice(0,1500),wrong:(c.wrong||[]).map(w=>w.slice(0,500)),box:0,due:now,created:now,noteId:note.id})));
+  mark(f.id);
+  if(AI){const added=dk.cards.slice(-res.cards.length).filter(needsWrong).map(c=>({it:{fid:f.id,cid:c.id},c}));
+    for(let k=0;k<added.length;k+=10){setBusy(f.id,T('preparingN',k,added.length));if(!await fetchWrong(added.slice(k,k+10)))break}}
+  S.busy=null;
+  toast(T('made',res.cards.length));
+  return true;
+}
+
+/* ---------- study ---------- */
+function startStudy(items,title){
+  if(!items.length){toast(T('nothing'));return}
+  const q=items.slice().sort(()=>Math.random()-.5).slice(0,60);
+  study={title,q,i:0,flip:false,done:0,total:q.length,tally:{again:0,hard:0,good:0,easy:0,right:0,wrong:0},seen:new Set(),mc:null,picked:null,lastR:null};
+  $('#study').hidden=false;prepareMC();
+}
+const needsWrong=c=>!c.wrong||c.wrong.filter(Boolean).length<2;
+const mcPending=new Set(),mcFailed=new Set();
+function pickArr(r,keys){if(Array.isArray(r))return r;if(!r||typeof r!=='object')return null;for(const k of keys)if(Array.isArray(r[k]))return r[k];for(const v of Object.values(r))if(Array.isArray(v))return v;return null}
+function wrongOf(x,correct){
+  const arr=Array.isArray(x)?x:(x&&(x.wrong||x.wrong_answers||x.wrongAnswers||x.distractors||x.incorrect||x.options))||[];
+  const norm=s=>String(s).trim().toLowerCase();const seen=new Set([norm(correct||'')]);const out=[];
+  for(const v of Array.isArray(arr)?arr:[]){const s=String((v&&typeof v==='object')?(v.text||v.answer||''):v||'').trim().slice(0,500);if(s&&!seen.has(norm(s))){seen.add(norm(s));out.push(s)}}
+  return out.slice(0,3);
+}
+const normTxt=t=>String(t||'').replace(/[\u200B-\u200D\uFEFF\u00AD]/g,'').replace(/[\uFF5C\u2502\u2503\u2223\u00A6\u01C0\u2016\u23D0\u2758]/g,'|').replace(/\r\n?|\u2028|\u2029/g,'\n').replace(/\u00A0/g,' ');
+const stripBullet=s=>s.replace(/^\s*(?:[-*•–—]|\(?[a-dA-D1-9][.)]|\d+[.)])\s*/,'').replace(/^["“”']|["“”']$/g,'').trim();
+function parseBlocks(text,n){
+  // "1. ...\n- a\n- b\n- c" style
+  const sets=Array.from({length:n},()=>[]);let k=-1;
+  for(const raw of text.split('\n')){const l=raw.replace(/\*\*/g,'').trim();if(!l)continue;
+    const m=l.match(/^(?:card\s*|cartão\s*|#)?(\d+)\s*[.):-]\s*(.*)$/i);
+    if(m&&+m[1]>=1&&+m[1]<=n){k=+m[1]-1;const rest=stripBullet(m[2]||'');if(rest&&!/^(question|pergunta|correct|resposta certa)/i.test(rest))sets[k].push(rest);continue}
+    if(k>=0&&/^\s*(?:[-*•–—]|\(?[a-dA-D][.)])/.test(raw))sets[k].push(stripBullet(l))}
+  return sets;
+}
+function parseWrongLines(text,n){
+  text=normTxt(text);
+  const sets=Array.from({length:n},()=>[]);const loose=[];
+  for(const raw of text.split('\n')){
+    const l=raw.replace(/\*\*/g,'').trim();if(!l.includes('|'))continue;
+    const parts=l.split('|').map(s=>s.trim());
+    const m=parts[0].match(/^(?:card\s*|cartão\s*|#)?(\d+)\s*[.):-]?$/i);
+    if(m){const k=+m[1]-1;if(k>=0&&k<n&&!sets[k].length)sets[k]=parts.slice(1).filter(Boolean)}
+    else loose.push(parts.filter(Boolean));
+  }
+  if(sets.every(s=>!s.length))loose.slice(0,n).forEach((p,i)=>sets[i]=p.map(stripBullet).filter(x=>!/^\d+$/.test(x)));
+  if(sets.every(s=>!s.length))return parseBlocks(text,n);
+  return sets;
+}
+async function wrongForOne(c){
+  const r=await AI(`A secondary-school student is revising with a multiple-choice question.
+Question: ${c.q}
+Correct answer: ${c.a}
+Write 3 WRONG answers in the same language, that answer the same question in the same form as the correct answer (yes/no → other yes/no statements; name/date/number/definition → another of the same kind). Plausible to a student who hasn't studied, similar length, but clearly incorrect.
+Reply with exactly 3 lines, one wrong answer per line, and nothing else.`,{modelTier:'quick',cache:false});
+  const lines=normTxt(r&&r.text).split(/\n|\|/).map(s=>stripBullet(s.replace(/\*\*/g,''))).filter(s=>s&&s.length<300&&!/^(wrong|errad|here|aqui)/i.test(s));
+  return wrongOf(lines,c.a);
+}
+function setsFromJSON(r,n){
+  let arr=pickArr(r,['items','cards','results','answers','wrong']);
+  if(!arr&&r&&typeof r==='object'){const ks=Object.keys(r).filter(k=>/^\d+$/.test(k));if(ks.length)arr=ks.sort((x,y)=>x-y).map(k=>r[k])}
+  const sets=Array.from({length:n},()=>[]);
+  (arr||[]).forEach((x,i)=>{const num=Number(x&&!Array.isArray(x)&&(x.n??x.number??x.id??x.card));const k=(num>=1&&num<=n)?num-1:i;if(k<n&&!sets[k].length)sets[k]=Array.isArray(x)?x:(x&&(x.wrong||x.wrong_answers||x.wrongAnswers||x.distractors||x.incorrect||x.options))||[]});
+  return sets;
+}
+async function fetchWrong(part){
+  part.forEach(({c})=>mcPending.add(c.id));
+  if(study)renderStudy();
+  let failed=null,raw='';
+  const cardsTxt=part.map(({c},i)=>`${i+1}. Question: ${c.q}\n   Correct answer: ${c.a}`).join('\n');
+  const rules=`You write wrong answer options for multiple-choice revision questions for a secondary-school student. For each numbered card below, write exactly 3 WRONG answers.
+Rules:
+- Same language as the card.
+- Each wrong answer answers the SAME question in the SAME form as the correct answer: for a yes/no question they are other yes/no statements about the same point (e.g. "Yes, all cells have one." / "Only some animal cells have one."); for a name, date, number, place, formula or definition they are other names, dates, numbers, places, formulas or definitions of that same kind.
+- Plausible to a student who hasn't studied, similar length and style to the correct answer, but clearly incorrect. Never a near-copy of the correct answer, never "all/none of the above".`;
+  const apply=sets=>{let got=0;part.forEach((p,i)=>{const w=wrongOf(sets[i]||[],p.c.a);if(w.length>=2){p.c.wrong=w;mark(p.it.fid);got++}});return got};
+  try{
+    // 1st: plain text, one line per card (most reliable)
+    const r=await AI(`${rules}
+- Do not use the character "|" inside an answer.
+Reply with exactly one line per card and nothing else, in this format:
+1 | wrong answer | wrong answer | wrong answer
+2 | wrong answer | wrong answer | wrong answer
+
+CARDS:
+${cardsTxt}`,{modelTier:'default',cache:false});
+    raw=String(r&&r.text||'');
+    let got=apply(parseWrongLines(raw,part.length));
+    // 2nd: JSON, for whatever is still missing
+    if(got<part.length){
+      const rest=part.filter(p=>needsWrong(p.c));
+      try{const j=await AI.json(`${rules}
+Return ONLY JSON: {"items":[{"n":1,"wrong":["...","...","..."]}]}
+
+CARDS:
+${rest.map(({c},i)=>`${i+1}. Question: ${c.q}\n   Correct answer: ${c.a}`).join('\n')}`,{modelTier:'default'});
+        const sets=setsFromJSON(j,rest.length);rest.forEach((p,i)=>{const w=wrongOf(sets[i]||[],p.c.a);if(w.length>=2){p.c.wrong=w;mark(p.it.fid)}});
+        if(!raw)raw=JSON.stringify(j)}catch(e){if(e&&(e.code==='not_granted'||e.code==='rate_limited'))throw e}
+    }
+    // 3rd: one card at a time, plain list
+    const rest2=part.filter(p=>needsWrong(p.c));
+    for(let k=0;k<rest2.length;k+=4){
+      await Promise.all(rest2.slice(k,k+4).map(async p=>{try{const w=await wrongForOne(p.c);if(w.length>=2){p.c.wrong=w;mark(p.it.fid)}}catch(e){if(e&&(e.code==='not_granted'||e.code==='rate_limited'))throw e}}));
+    }
+  }catch(e){failed=e;if(e&&e.code==='not_granted'){AI=null;IMG=false}}
+  let miss=0;for(const {c} of part){mcPending.delete(c.id);if(needsWrong(c)){mcFailed.add(c.id);miss++}}
+  if(!failed&&miss===part.length)failed={code:'empty'};
+  if(failed){try{console.warn('Revise: answer options failed',failed,raw)}catch(e){}
+    toast(failed.code==='rate_limited'?T('rate'):T('mcFail')+` (${failed.code||'?'}${raw?': '+raw.slice(0,70).replace(/\n/g,'⏎').replace(/[^\x20-\x7E\u00C0-\u024F⏎]/g,ch=>'\\u'+ch.charCodeAt(0).toString(16).padStart(4,'0')):''})`)}
+  if(study){study.mc=null;renderStudy()}
+  return !failed;
+}
+async function prepareMC(){
+  const s=study;
+  if(!s||MODE!=='mc'||!AI){renderStudy();return}
+  const todo=[];const ids=new Set();
+  for(const it of s.q.slice(s.i)){const c=findCard(it);if(c&&needsWrong(c)&&!ids.has(c.id)&&!mcPending.has(c.id)&&!mcFailed.has(c.id)){ids.add(c.id);todo.push({it,c})}}
+  renderStudy();
+  if(!todo.length)return;
+  // first few quickly so the student can start, then the rest in the background
+  if(!await fetchWrong(todo.slice(0,4)))return;
+  for(let k=4;k<todo.length;k+=10){if(study!==s||MODE!=='mc')return;if(!await fetchWrong(todo.slice(k,k+10)))return}
+}
+function findCard(it){return (S.decks[it.fid]?.cards||[]).find(c=>c.id===it.cid)}
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function optionsFor(it,c){
+  const norm=s=>String(s).trim().toLowerCase();const seen=new Set([norm(c.a)]);const wrong=[];
+  for(const w of c.wrong||[]){if(w&&!seen.has(norm(w))){seen.add(norm(w));wrong.push(w)}}
+  if(wrong.length<2)return null;
+  const opts=shuffle([c.a,...wrong.slice(0,3)]);
+  return{key:study.i,opts,ci:opts.indexOf(c.a)};
+}
+function curMC(){
+  if(MODE!=='mc')return null;
+  const it=study.q[study.i],c=findCard(it);if(!c)return null;
+  if(!study.mc||study.mc.key!==study.i)study.mc=optionsFor(it,c)||{key:study.i,none:true};
+  return study.mc.none?null:study.mc;
+}
+function renderStudy(){
+  const o=$('#study');if(!study){o.hidden=true;o.innerHTML='';return}
+  const title=study.title===null?T('allSubj'):study.title;
+  const t=study.tally;
+  if(study.i>=study.q.length){
+    const lines=[];if(t.right+t.wrong)lines.push(T('tallyMC',t));if(t.again+t.hard+t.good+t.easy)lines.push(T('tally',t));
+    o.innerHTML=`<div class="st"><div class="dlg" style="width:100%;text-align:center"><h2 style="font-size:30px">${T('nice')}</h2><p class="lead" style="margin:8px auto">${esc(T('went',study.total,title))}</p>
+     ${lines.map(l=>`<p>${esc(l)}</p>`).join('')}<div class="row" style="justify-content:center;margin-top:16px"><button class="btn pri" data-sact="close">${T('done')}</button></div></div></div>`;return}
+  const it=study.q[study.i],c=findCard(it);if(!c){study.i++;study.mc=null;return renderStudy()}
+  const pct=Math.round(study.done/study.total*100);
+  const fmt=s=>esc(s).replace(/\n/g,'<br>');
+  const nextLbl=r=>{const b=c.box||0;const d=r==='hard'?Math.max(1,Math.round(INT[b]/2)):r==='good'?INT[Math.min(6,b+1)]:INT[Math.min(6,b+2)];return T('days',d)};
+  const mc=curMC();
+  const head=`<div class="row" style="justify-content:space-between"><b>${esc(title)}</b><span class="note">${study.done} / ${study.total}</span>
+     <div class="row"><div class="mode" role="group"><button class="${MODE==='mc'?'on':''}" data-sact="modeMC">${T('modeMC')}</button><button class="${MODE==='flip'?'on':''}" data-sact="modeFlip">${T('modeFlip')}</button></div>
+     <button class="btn ghost" data-sact="close">${T('stop')}</button></div></div>
+   <div class="prog"><i style="width:${pct}%"></i></div>`;
+  let body;
+  const waiting=MODE==='mc'&&!mc&&needsWrong(c)&&mcPending.has(c.id);
+  const failedHere=MODE==='mc'&&!mc&&mcFailed.has(c.id);
+  if(waiting){
+    body=`<div class="face solo"><span class="lab">${T('question')}</span>${fmt(c.q)}</div>
+     <div class="busy" role="status" style="justify-content:center"><span class="spin"></span>${esc(T('preparing'))}</div>`;
+  }else if(mc){
+    const p=study.picked;
+    body=`<div class="face solo"><span class="lab">${T('question')}</span>${fmt(c.q)}</div>
+     <div class="opts">${mc.opts.map((x,i)=>{const cls=p===null?'':i===mc.ci?'ok':i===p?'bad':'dim';
+       return `<button class="opt ${cls}" data-sact="pick" data-i="${i}" ${p!==null?'disabled':''}><span class="k">${i+1}</span><span>${fmt(x)}</span></button>`}).join('')}</div>
+     ${p===null?`<p class="note" style="text-align:center;margin:0">${T('pickAns')}</p>`
+      :`<p class="fb" style="color:${p===mc.ci?'#2f9e5a':'#d9434a'}">${p===mc.ci?T('correct'):T('wrongAns')}</p><div class="row" style="justify-content:center"><button class="btn pri" data-sact="next" id="nextBtn">${T('next')}</button></div>`}`;
+  }else{
+    body=`<button class="flip ${study.flip?'on':''}" data-sact="flip" aria-label="${esc(T('flip'))}"><div class="flin">
+     <div class="face"><span class="lab">${T('question')}</span>${fmt(c.q)}</div>
+     <div class="face back"><span class="lab">${T('answer')}</span>${fmt(c.a)}</div></div></button>
+   ${study.flip?`<div class="rate"><button class="r1" data-sact="again">${T('again')}<small>1 · ${T('now')}</small></button><button class="r2" data-sact="hard">${T('hard')}<small>2 · ${nextLbl('hard')}</small></button><button class="r3" data-sact="good">${T('good')}<small>3 · ${nextLbl('good')}</small></button><button class="r4" data-sact="easy">${T('easy')}<small>4 · ${nextLbl('easy')}</small></button></div>`
+   :`<p class="note" style="text-align:center;margin:0">${MODE==='mc'?T('onlyFlip')+' ':''}${T('think')}</p>${failedHere&&AI?`<div class="row" style="justify-content:center;margin-top:8px"><button class="btn ghost" data-sact="retryMC">${T('retryMC')}</button></div>`:''}`}`;
+  }
+  o.innerHTML=`<div class="st">${head}${body}</div>`;
+  const nb=$('#nextBtn');if(nb)nb.focus();
+}
+function schedule(r){
+  const it=study.q[study.i],c=findCard(it);if(!c)return;
+  const now=Date.now();let b=c.box||0;
+  if(r==='again'){b=0;c.due=now}
+  else if(r==='hard'){c.due=now+Math.max(1,Math.round(INT[b]/2))*DAY}
+  else{b=Math.min(6,b+(r==='good'?1:2));c.due=now+INT[b]*DAY}
+  c.box=b;mark(it.fid);
+}
+function advance(r){
+  const it=study.q[study.i];
+  if(r==='again'&&!study.seen.has(it.cid)){study.q.push(it);study.seen.add(it.cid)}else{study.seen.add(it.cid);study.done++}
+  study.i++;study.flip=false;study.picked=null;study.mc=null;study.lastR=null;renderStudy();
+}
+function rate(r){const it=study.q[study.i];if(!findCard(it))return;if(!study.seen.has(it.cid))study.tally[r]++;schedule(r);advance(r)}
+function pick(i){
+  const mc=curMC();if(!mc||study.picked!==null)return;
+  const it=study.q[study.i];const ok=i===mc.ci;const r=ok?'good':'again';
+  if(!study.seen.has(it.cid))study.tally[ok?'right':'wrong']++;
+  schedule(r);study.picked=i;study.lastR=r;renderStudy();
+}
+function setMode(m){MODE=m;try{localStorage.setItem('revise:mode',m)}catch(e){}study.mc=null;study.picked=null;study.flip=false;if(m==='mc')prepareMC();else renderStudy()}
+$('#study').onclick=e=>{const b=e.target.closest('[data-sact]');if(!b)return;const a=b.dataset.sact;
+  if(a==='close'){study=null;renderStudy();render()}
+  else if(a==='flip'){study.flip=!study.flip;renderStudy()}
+  else if(a==='pick')pick(+b.dataset.i);
+  else if(a==='next'){if(study.lastR)advance(study.lastR)}
+  else if(a==='retryMC'){mcFailed.clear();prepareMC()}
+  else if(a==='modeMC'){if(study.picked===null)setMode('mc')}
+  else if(a==='modeFlip'){if(study.picked===null)setMode('flip')}
+  else rate(a)};
+document.addEventListener('keydown',e=>{
+  const d=$('#dlg');if(!d.hidden){if(e.key==='Escape'&&d._close)d._close();return}
+  if(!study)return;
+  if(e.key==='Escape'){study=null;renderStudy();render();return}
+  if(study.i>=study.q.length)return;
+  {const c0=findCard(study.q[study.i]);if(MODE==='mc'&&c0&&mcPending.has(c0.id)&&needsWrong(c0))return}
+  if(e.target&&e.target.closest&&e.target.closest('button')&&(e.key===' '||e.key==='Enter'))return;
+  const mc=curMC();
+  if(mc){
+    if(study.picked===null){const n=+e.key;if(n>=1&&n<=mc.opts.length)pick(n-1)}
+    else if(e.key===' '||e.key==='Enter'||e.key==='ArrowRight'){e.preventDefault();advance(study.lastR)}
+    return}
+  if(e.key===' '||e.key==='Enter'){e.preventDefault();study.flip=!study.flip;renderStudy()}
+  else if(study.flip&&['1','2','3','4'].includes(e.key))rate(['again','hard','good','easy'][+e.key-1]);
+});
+const itemsOf=(fids,dueOnly)=>fids.flatMap(fid=>(S.decks[fid]?.cards||[]).filter(c=>!dueOnly||(c.due||0)<=Date.now()).map(c=>({fid,cid:c.id})));
+
+/* ---------- actions ---------- */
+$('#main').addEventListener('input',e=>{const k=e.target.dataset.draft;if(!k)return;const fid=S.view.id;(S.draft[fid]||(S.draft[fid]={title:'',text:''}))[k]=e.target.value});
+$('#fileIn').onchange=e=>{handleFiles([...e.target.files]);e.target.value=''};
+$('#menuBtn').onclick=()=>$('#side').classList.toggle('open');
+document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>setLang(b.dataset.lang));
+document.querySelectorAll('#themeSw button').forEach(b=>b.onclick=()=>applyTheme(b.dataset.mode));
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',paintTheme)}catch(e){}
+async function act(a,ds){
+  const v=S.view;
+  switch(a){
+  case'home':go({type:'home'});break;
+  case'subject':go({type:'subject',id:ds.id});break;
+  case'folder':{const f=fold(ds.id);if(f)S.open[f.subjectId]=true;go({type:'folder',id:ds.id});break}
+  case'tab':S.view={...v,tab:ds.tab};S.editing=null;render();break;
+  case'newSubject':{const r=await ask(T('nsTitle'),{ph:T('nsPh'),colors:true,color:COLORS[S.lib.subjects.length%COLORS.length],ok:T('create')});if(!r)return;
+    const s={id:nid(),name:r.name,color:r.color};S.lib.subjects.push(s);mark('lib');go({type:'subject',id:s.id});break}
+  case'editSubject':{const s=subj(ds.id);const r=await ask(T('editSubj'),{value:s.name,colors:true,color:s.color});if(!r)return;s.name=r.name;s.color=r.color;mark('lib');render();break}
+  case'delSubject':{const s=subj(ds.id);if(!await confirmBox(T('delSubjQ',s.name)))return;
+    for(const f of S.lib.folders.filter(f=>f.subjectId===s.id)){delete S.decks[f.id];mark(f.id)}
+    S.lib.folders=S.lib.folders.filter(f=>f.subjectId!==s.id);S.lib.subjects=S.lib.subjects.filter(x=>x!==s);mark('lib');go({type:'home'});break}
+  case'newFolder':{const n=await ask(ds.pid?T('nsfTitle'):T('nfTitle'),{ph:T('nfPh'),ok:T('create')});if(!n)return;
+    const f={id:nid(),subjectId:ds.sid,parentId:ds.pid||null,name:n};S.lib.folders.push(f);S.decks[f.id]={cards:[],notes:[]};mark('lib');S.open[ds.sid]=true;go({type:'folder',id:f.id,tab:'add'});break}
+  case'renameFolder':{const f=fold(ds.id);const n=await ask(T('renameF'),{value:f.name});if(!n)return;f.name=n;mark('lib');render();break}
+  case'delFolder':{const f=fold(ds.id);const ids=descend(f.id);if(!await confirmBox(T('delFolderQ',f.name,ids.length>1)))return;
+    for(const id of ids){delete S.decks[id];mark(id)}S.lib.folders=S.lib.folders.filter(x=>!ids.includes(x.id));mark('lib');
+    go(f.parentId?{type:'folder',id:f.parentId}:{type:'subject',id:f.subjectId});break}
+  case'pick':$('#fileIn').click();break;
+  case'generate':case'saveNote':{const f=fold(v.id);const d=S.draft[f.id]||{};const text=(d.text||'').trim();
+    if(!text){toast(T('needNotes'));$('#nText')?.focus();return}
+    if(a==='saveNote'){deck(f.id).notes.push({id:nid(),title:d.title||T('defNote'),text:text.slice(0,80000),created:Date.now(),revision:null});mark(f.id);S.draft[f.id]={title:'',text:''};S.view={...v,tab:'notes'};render();toast(T('notesSaved'));return}
+    const ok=await makeCards(f,text,(d.title||'').trim(),null);
+    if(ok){S.draft[f.id]={title:'',text:''};if(S.view.type==='folder'&&S.view.id===f.id)S.view={...S.view,tab:'cards'}}
+    render();break}
+  case'more':{const f=fold(v.id);const n=deck(f.id).notes.find(x=>x.id===ds.id);if(await makeCards(f,n.text,n.title,n))S.view={...S.view,tab:'cards'};render();break}
+  case'mkRev':{const f=fold(v.id);const n=deck(f.id).notes.find(x=>x.id===ds.id);setBusy(f.id,T('writingRev'));
+    try{n.revision=await aiRevision(n.text)||null;mark(f.id);S.busy=null;S.view={...S.view,tab:'rev'}}catch(e){aiError(e);S.busy=null}render();break}
+  case'delNote':{const f=fold(v.id);const dk=deck(f.id);const n=dk.notes.find(x=>x.id===ds.id);const cc=dk.cards.filter(c=>c.noteId===n.id).length;
+    if(!await confirmBox(T('delNotesQ',cc)))return;
+    dk.notes=dk.notes.filter(x=>x!==n);dk.cards=dk.cards.filter(c=>c.noteId!==n.id);mark(f.id);render();break}
+  case'mkOpts':{const fid=v.id;const dk=deck(fid);const todo=dk.cards.filter(needsWrong).map(c=>({it:{fid,cid:c.id},c}));if(!todo.length)return;
+    mcFailed.clear();let done=0;
+    for(let k=0;k<todo.length;k+=10){setBusy(fid,T('preparingN',done,todo.length));if(!await fetchWrong(todo.slice(k,k+10)))break;done=Math.min(todo.length,k+10)}
+    S.busy=null;render();const left=dk.cards.filter(needsWrong).length;if(!left)toast(T('optsDone'));break}
+  case'tryOpt':S.tried[ds.id]=+ds.n;render();break;
+  case'untry':delete S.tried[ds.id];render();break;
+  case'reveal':S.tried[ds.id]=0;render();break;
+  case'toggleAns':S.showAns=!S.showAns;S.tried={};render();break;
+  case'addCard':{const f=fold(v.id);const c={id:nid(),q:'',a:'',box:0,due:Date.now(),created:Date.now(),noteId:null};deck(f.id).cards.unshift(c);S.editing=c.id;S.search='';render();$('#eQ')?.focus();break}
+  case'editCard':S.editing=ds.id;render();$('#eQ')?.focus();break;
+  case'cancelEdit':{const dk=deck(v.id);const c=dk.cards.find(x=>x.id===ds.id);if(c&&!c.q&&!c.a)dk.cards=dk.cards.filter(x=>x!==c);S.editing=null;render();break}
+  case'saveCard':{const dk=deck(v.id);const c=dk.cards.find(x=>x.id===ds.id);const q=$('#eQ').value.trim(),an=$('#eA').value.trim();
+    if(!q||!an){toast(T('needQA'));return}c.q=q;c.a=an;c.wrong=[...document.querySelectorAll('.eW')].map(x=>x.value.trim()).filter(Boolean);S.editing=null;mark(v.id);render();break}
+  case'delCard':{const dk=deck(v.id);dk.cards=dk.cards.filter(x=>x.id!==ds.id);mark(v.id);render();break}
+  case'studyFolder':{const ids=[ds.id];const due=itemsOf(ids,true);startStudy(due.length?due:itemsOf(ids,false),fold(ds.id).name);break}
+  case'studyFolderAll':startStudy(itemsOf([ds.id],false),fold(ds.id).name);break;
+  case'studySubject':{const ids=S.lib.folders.filter(f=>f.subjectId===ds.id).map(f=>f.id);const due=itemsOf(ids,true);startStudy(due.length?due:itemsOf(ids,false),subj(ds.id).name);break}
+  case'studyAllDue':startStudy(itemsOf(S.lib.folders.map(f=>f.id),true),null);break;
+  case'example':{const s={id:nid(),name:T('exSubj'),color:COLORS[2]};const f={id:nid(),subjectId:s.id,parentId:null,name:T('exFolder')};
+    S.lib.subjects.push(s);S.lib.folders.push(f);S.decks[f.id]={cards:[],notes:[]};mark('lib');S.open[s.id]=true;
+    S.draft[f.id]={title:T('exTitle'),text:T('exText')};
+    go({type:'folder',id:f.id,tab:'add'});toast(T('exAdded'));break}
+  }
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||!b.closest('#main,#side'))return;e.preventDefault();act(b.dataset.act,b.dataset)});
+
+/* ---------- start ---------- */
+async function load(){
+  status(T('opening'));S.loadFail=false;
+  try{const r=await backend.load();S.lib=r.lib&&Array.isArray(r.lib.subjects)?{subjects:r.lib.subjects,folders:r.lib.folders||[]}:{subjects:[],folders:[]};S.decks=r.decks||{};
+    for(const k in S.decks){const d=S.decks[k];d.cards=d.cards||[];d.notes=d.notes||[]}
+    status(backend.name==='db'?T('savedAcc'):T('savedLocal'))}
+  catch(e){S.loadFail=true;status(T('cantReach'))}
+  render();
+}
+setLang(LANG);
+status(T('opening'));$('#main').innerHTML=`<p class="lead">${T('opening')}</p>`;
+(async()=>{
+  const [db,user,sample]=await Promise.all([use('db'),use('user'),use('sample')]);
+  AI=sample||null;
+  if(AI){try{const l=await AI.limits();IMG=!!(l&&l.images)}catch(e){IMG=false}}
+  let uid=null;if(db&&user){try{uid=await user.id()}catch(e){}}
+  backend=(db&&uid)?dbBackend(db,uid):localBackend;
+  await load();
+})();
+}
+</script>
+</body>
+</html>
